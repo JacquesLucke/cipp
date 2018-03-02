@@ -1,0 +1,52 @@
+class Bits:
+    def __init__(self, bits):
+        self.assertStringRepresentsBits(bits)
+        self._bits = bits
+
+    @staticmethod
+    def assertStringRepresentsBits(string):
+        assert isinstance(string, str)
+        assert all(c == "0" or c == "1" for c in string)
+
+    @classmethod
+    def fromPosInt(cls, number, length = None):
+        assert number >= 0
+        
+        binary = bin(number)[2:]
+        if length is None:
+            return cls(binary)
+
+        binary = binary.zfill(length)
+        if len(binary) > length:
+            raise Exception("number requires more bits than specified by length")
+        return cls(binary)
+
+    @classmethod
+    def fromHex(cls, hexNumber):
+        if len(hexNumber) == 0:
+            return Bits("")
+        number = int(hexNumber, base = 16)
+        length = len(hexNumber) * 4
+        return cls.fromPosInt(number, length)
+
+    def toString(self):
+        return self._bits
+
+    def __eq__(self, other):
+        return self._bits == other
+
+    def __add__(self, other):
+        return Bits(self._bits + other._bits)
+
+    @classmethod
+    def join(cls, *args):
+        return cls("".join(b._bits for b in args))
+
+    def __len__(self):
+        return len(self._bits)
+
+    def __repr__(self):
+        return f"<Bits: {self._bits}>"
+
+    def __int__(self):
+        return int(self._bits, base = 2)
