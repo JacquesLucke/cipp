@@ -5,7 +5,7 @@ Online conversion: intel syntax -> binary:
 
 import unittest
 
-from . instructions import PushInstr, PopInstr, RetInstr, AddRegToRegInstr, MovRegToRegInstr
+from . instructions import PushInstr, PopInstr, RetInstr, AddRegToRegInstr, MovRegToRegInstr, IncInstr, DecInstr, MovImmInstr
 from . registers import Registers
 from . bits import Bits
 
@@ -59,4 +59,22 @@ class TestMovRegToRegInstruction(TestInstruction):
     simpleTestCases = [
         (MovRegToRegInstr(ebx, edx), "89D3", "mov ebx, edx"),
         (MovRegToRegInstr(eax, ebx), "89D8", "mov eax, ebx")
+    ]
+
+class TestIncInstruction(TestInstruction):
+    simpleTestCases = [
+        (IncInstr(eax), "40", "inc eax"),
+        (IncInstr(ebx), "43", "inc ebx")
+    ]
+
+class TestDecInstruction(TestInstruction):
+    simpleTestCases = [
+        (DecInstr(eax), "48", "dec eax"),
+        (DecInstr(ebx), "4B", "dec ebx")
+    ]
+
+class TestMovImmInstruction(TestInstruction):
+    simpleTestCases = [
+        (MovImmInstr(eax, 0), "B800000000", "mov eax, 0"),
+        (MovImmInstr(ecx, 2049), "B901080000", "mov ecx, 2049")
     ]

@@ -23,6 +23,9 @@ class TestBits(unittest.TestCase):
         self.assertEqual(int(Bits.fromPosInt(12)), 12)
         self.assertEqual(int(Bits.fromPosInt(54)), 54)
 
+    def testReversedBytes(self):
+        self.assertEqual(Bits.fromHex("ABCDEF").reversedBytes(), Bits.fromHex("EFCDAB"))
+
     def assertBits(self, bits, string):
         self.assertEqual(bits, string.replace(" ", ""))
 

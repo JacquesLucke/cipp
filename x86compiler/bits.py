@@ -11,7 +11,7 @@ class Bits:
     @classmethod
     def fromPosInt(cls, number, length = None):
         assert number >= 0
-        
+
         binary = bin(number)[2:]
         if length is None:
             return cls(binary)
@@ -29,6 +29,18 @@ class Bits:
         length = len(hexNumber) * 4
         return cls.fromPosInt(number, length)
 
+    @classmethod
+    def join(cls, *args):
+        return cls("".join(b._bits for b in args))
+
+    def reversedBytes(self):
+        length = len(self)
+        assert length % 8 == 0
+        newBits = ""
+        for i in range(length - 8, -1, -8):
+            newBits += self._bits[i:i+8]
+        return Bits(newBits)
+
     def toString(self):
         return self._bits
 
@@ -37,10 +49,6 @@ class Bits:
 
     def __add__(self, other):
         return Bits(self._bits + other._bits)
-
-    @classmethod
-    def join(cls, *args):
-        return cls("".join(b._bits for b in args))
 
     def __len__(self):
         return len(self._bits)

@@ -39,6 +39,14 @@ class PopInstr(SingleRegBaseInstruction):
     baseOpcodeHex = "58"
     intelSyntaxName = "pop"
 
+class IncInstr(SingleRegBaseInstruction):
+    baseOpcodeHex = "40"
+    intelSyntaxName = "inc"
+
+class DecInstr(SingleRegBaseInstruction):
+    baseOpcodeHex = "48"
+    intelSyntaxName = "dec"
+
 class RegToRegBaseInstruction(Instruction):
     opcodeHex = NotImplemented
     intelSyntaxName = NotImplemented
@@ -62,6 +70,19 @@ class AddRegToRegInstr(RegToRegBaseInstruction):
 class MovRegToRegInstr(RegToRegBaseInstruction):
     opcodeHex = "89"
     intelSyntaxName = "mov"
+
+class MovImmInstr(Instruction):
+    def __init__(self, reg, value):
+        self.reg = reg
+        self.value = value
+
+    def toMachineCode(self):
+        opcode = Bits.fromPosInt(intFromHex("B8") + self.reg.number, length = 8)
+        imm = Bits.fromPosInt(self.value, length = 32).reversedBytes()
+        return opcode + imm
+
+    def toIntelSyntax(self):
+        return f"mov {self.reg.name}, {self.value}"
 
 def intFromHex(hexcode):
     return int(hexcode, base = 16)
