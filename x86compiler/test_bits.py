@@ -29,5 +29,9 @@ class TestBits(unittest.TestCase):
     def assertBits(self, bits, string):
         self.assertEqual(bits, string.replace(" ", ""))
 
+    def testToHex(self):
+        self.assertEqual(Bits.fromHex("03CDF").toHex(), "03CDF")
+        self.assertEqual(Bits.fromHex("").toHex(), "")
+
 if __name__ == "__main__":
     unittest.main()

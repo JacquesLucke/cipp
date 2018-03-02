@@ -44,6 +44,13 @@ class Bits:
     def toString(self):
         return self._bits
 
+    def toHex(self):
+        assert len(self) % 4 == 0
+        fullHex = ""
+        for i in range(0, len(self), 4):
+            fullHex += hexCodes[self._bits[i:i+4]]
+        return fullHex
+
     def __eq__(self, other):
         return self._bits == other
 
@@ -58,3 +65,7 @@ class Bits:
 
     def __int__(self):
         return int(self._bits, base = 2)
+
+
+# eg: "1100" -> "C"
+hexCodes = {bin(i)[2:].zfill(4) : hex(i)[-1:].upper() for i in range(16)}
