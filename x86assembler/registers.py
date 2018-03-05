@@ -9,8 +9,10 @@ class Register:
     def number(self):
         return int(self.bits)
 
-class Registers:
-    eax = Register("eax", Bits("000"))
-    ebx = Register("ebx", Bits("011"))
-    ecx = Register("ecx", Bits("001"))
-    edx = Register("edx", Bits("010"))
+eax = Register("eax", Bits("000"))
+ebx = Register("ebx", Bits("011"))
+ecx = Register("ecx", Bits("001"))
+edx = Register("edx", Bits("010"))
+
+esp = Register("esp", Bits("100"))
+ebp = Register("ebp", Bits("101"))

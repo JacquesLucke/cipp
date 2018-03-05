@@ -3,12 +3,7 @@ import unittest
 from . bits import Bits
 from . block import Block
 from . instructions import PushInstr, RetInstr, AddRegToRegInstr
-from . registers import Registers
-
-eax = Registers.eax
-ebx = Registers.ebx
-ecx = Registers.ecx
-edx = Registers.edx
+from . registers import eax, ebx, ecx, edx
 
 class TestBlock(unittest.TestCase):
     def testToIntelSyntax(self):

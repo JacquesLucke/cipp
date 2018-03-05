@@ -26,7 +26,7 @@ class SingleRegBaseInstruction(Instruction):
         self.reg = reg
 
     def toMachineCode(self):
-        return Bits.fromPosInt(intFromHex(self.baseOpcodeHex) + self.reg.number, length = 8)
+        return Bits.fromInt(intFromHex(self.baseOpcodeHex) + self.reg.number, length = 8)
 
     def toIntelSyntax(self):
         return f"{self.intelSyntaxName} {self.reg.name}"
@@ -71,18 +71,51 @@ class MovRegToRegInstr(RegToRegBaseInstruction):
     opcodeHex = "89"
     intelSyntaxName = "mov"
 
-class MovImmInstr(Instruction):
+class MovImmToRegInstr(Instruction):
     def __init__(self, reg, value):
         self.reg = reg
         self.value = value
 
     def toMachineCode(self):
-        opcode = Bits.fromPosInt(intFromHex("B8") + self.reg.number, length = 8)
-        imm = Bits.fromPosInt(self.value, length = 32).reversedBytes()
+        opcode = Bits.fromInt(intFromHex("B8") + self.reg.number, length = 8)
+        imm = Bits.fromInt(self.value, length = 32).reversedBytes()
         return opcode + imm
 
     def toIntelSyntax(self):
         return f"mov {self.reg.name}, {self.value}"
+
+class MovMemOffsetToRegInstr(Instruction):
+    def __init__(self, target, addrReg, offset):
+        self.target = target
+        self.addrReg = addrReg
+        self.offset = offset
+
+    def toMachineCode(self):
+        opcode = Bits.fromHex("8B")
+        targetReg = self.target.bits
+        addrReg = self.addrReg.bits
+        if self.offset == 0:
+            if addrReg == "100": # special case esp
+                pass
+            else:
+                mod = Bits("00")
+                immOffset = Bits("")
+        elif -128 <= self.offset <= 127:
+            mod = Bits("01")
+            immOffset = Bits.fromInt(self.offset, length = 8)
+        else:
+            mod = Bits("10")
+            immOffset = Bits.fromInt(self.offset, length = 32).reversedBytes()
+        return Bits.join(opcode, mod, targetReg, addrReg, immOffset)
+
+    def toIntelSyntax(self):
+        if self.offset > 0:
+            return f"mov {self.target.name}, [{self.addrReg.name} + {self.offset}]"
+        elif self.offset < 0:
+            return f"mov {self.target.name}, [{self.addrReg.name} - {abs(self.offset)}]"
+        else:
+            return f"mov {self.target.name}, [{self.addrReg.name}]"
+
 
 def intFromHex(hexcode):
     return int(hexcode, base = 16)

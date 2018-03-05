@@ -6,19 +6,14 @@ class Bits:
     @staticmethod
     def assertStringRepresentsBits(string):
         assert isinstance(string, str)
-        assert all(c == "0" or c == "1" for c in string)
+        assert all(c == "0" or c == "1" for c in string), string
 
     @classmethod
-    def fromPosInt(cls, number, length = None):
-        assert number >= 0
-
-        binary = bin(number)[2:]
+    def fromInt(cls, number, length = None):
         if length is None:
-            return cls(binary)
-
-        binary = binary.zfill(length)
-        if len(binary) > length:
-            raise Exception("number requires more bits than specified by length")
+            if number >= 0: return cls(bin(number)[2:])
+            else: raise Exception("length has to be given when using negative integers")
+        binary = intToBits(number, length)
         return cls(binary)
 
     @classmethod
@@ -27,7 +22,7 @@ class Bits:
             return Bits("")
         number = int(hexNumber, base = 16)
         length = len(hexNumber) * 4
-        return cls.fromPosInt(number, length)
+        return cls.fromInt(number, length)
 
     @classmethod
     def join(cls, *args):
@@ -46,10 +41,11 @@ class Bits:
 
     def toHex(self):
         assert len(self) % 4 == 0
-        fullHex = ""
-        for i in range(0, len(self), 4):
-            fullHex += hexCodes[self._bits[i:i+4]]
-        return fullHex
+        return "".join(hexCodes[p] for p in iterSequenceParts(self._bits, 4))
+
+    def toCArrayInitializer(self):
+        array = ", ".join("0x" + p for p in iterSequenceParts(self.toHex(), 2))
+        return "{" + array + "}"
 
     def __eq__(self, other):
         return self._bits == other
@@ -66,6 +62,25 @@ class Bits:
     def __int__(self):
         return int(self._bits, base = 2)
 
+def iterSequenceParts(sequence, partLength):
+    assert len(sequence) % partLength == 0
+    for i in range(0, len(sequence), partLength):
+        yield sequence[i:i+partLength]
 
 # eg: "1100" -> "C"
 hexCodes = {bin(i)[2:].zfill(4) : hex(i)[-1:].upper() for i in range(16)}
+
+
+def intToBits(number, length):
+    if number < 0:
+        result = complement(bin(abs(number) - 1)[2:]).rjust(length, "1")
+    else:
+        result = bin(number)[2:].rjust(length, "0")
+    if len(result) > length:
+        raise Exception("number requires more bits than specified by length")
+    return result
+
+def complement(bitString):
+    return "".join(complementDict[c] for c in bitString)
+
+complementDict = {"0" : "1", "1" : "0"}

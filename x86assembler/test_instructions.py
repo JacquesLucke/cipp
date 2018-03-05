@@ -5,14 +5,9 @@ Online conversion: intel syntax -> binary:
 
 import unittest
 
-from . instructions import PushInstr, PopInstr, RetInstr, AddRegToRegInstr, MovRegToRegInstr, IncInstr, DecInstr, MovImmInstr
-from . registers import Registers
+from . instructions import PushInstr, PopInstr, RetInstr, AddRegToRegInstr, MovRegToRegInstr, IncInstr, DecInstr, MovImmToRegInstr, MovMemOffsetToRegInstr
+from . registers import eax, ebx, ecx, edx, esp
 from . bits import Bits
-
-eax = Registers.eax
-ebx = Registers.ebx
-ecx = Registers.ecx
-edx = Registers.edx
 
 class TestInstruction(unittest.TestCase):
     simpleTestCases = []
@@ -73,8 +68,18 @@ class TestDecInstruction(TestInstruction):
         (DecInstr(ebx), "4B", "dec ebx")
     ]
 
-class TestMovImmInstruction(TestInstruction):
+class TestMovImmToRegInstruction(TestInstruction):
     simpleTestCases = [
-        (MovImmInstr(eax, 0), "B800000000", "mov eax, 0"),
-        (MovImmInstr(ecx, 2049), "B901080000", "mov ecx, 2049")
+        (MovImmToRegInstr(eax, 0), "B800000000", "mov eax, 0"),
+        (MovImmToRegInstr(ecx, 2049), "B901080000", "mov ecx, 2049")
+    ]
+
+class TestMovMemOffsetToRegInstr(TestInstruction):
+    simpleTestCases = [
+        (MovMemOffsetToRegInstr(eax, ebx, 100000), "8B83A0860100", "mov eax, [ebx + 100000]"),
+        (MovMemOffsetToRegInstr(eax, ebx, -100000), "8B836079FEFF", "mov eax, [ebx - 100000]"),
+        (MovMemOffsetToRegInstr(ecx, eax, 0), "8B08", "mov ecx, [eax]"),
+        (MovMemOffsetToRegInstr(ecx, eax, 1000), "8B88E8030000", "mov ecx, [eax + 1000]"),
+        (MovMemOffsetToRegInstr(eax, edx, 4), "8B4204", "mov eax, [edx + 4]"),
+        #(MovMemOffsetToRegInstr(eax, esp, 0), "8B0424", "mov eax, [esp]")
     ]
