@@ -9,6 +9,10 @@ from .. bits import Bits
 from .. registers import allRegisters
 from . mov_reg_to_reg import MovRegToRegInstr
 from . add_imm_to_reg import AddImmToRegInstr
+from . push_reg import PushRegInstr
+from . syscall import SyscallInstr
+from . pop_reg import PopRegInstr
+from . ret import RetInstr
 
 globals().update(allRegisters)
 
@@ -16,7 +20,9 @@ class TestInstruction(unittest.TestCase):
     simpleTestCases = []
 
     def assertMachineCode(self, instruction, expectedHex, message = None):
-        self.assertEqual(instruction.toMachineCode(), Bits.fromHex(expectedHex), message)
+        generatedHex = instruction.toMachineCode().toHex()
+        expectedHex = Bits.fromHex(expectedHex).toHex()
+        self.assertEqual(generatedHex, expectedHex, message)
 
     def assertIntelSyntax(self, instruction, expected):
         self.assertEqual(instruction.toIntelSyntax(), expected)
@@ -108,70 +114,45 @@ class TestAddImmToRegInstruction(TestInstruction):
         (AddImmToRegInstr(r9w, 1000), "664181c1e803", "add r9w, 1000"),
         (AddImmToRegInstr(r11w, -1200), "664181c350fb", "add r11w, -1200"),
         (AddImmToRegInstr(ax, 1000), "6605e803", "add ax, 1000")
-
     ]
 
-'''
-class TestPushInstruction(TestInstruction):
+class TestRetnInstruction(TestInstruction):
     simpleTestCases = [
-        (PushInstr(eax), "50", "push eax"),
-        (PushInstr(ebx), "53", "push ebx"),
-        (PushInstr(ebp), "55", "push ebp")
+        (RetInstr(), "c3", "ret"),
+        (RetInstr(1234), "c2d204", "ret 1234")
     ]
 
-class TestPopInstruction(TestInstruction):
+class TestSyscallInstruction(TestInstruction):
     simpleTestCases = [
-        (PopInstr(eax), "58", "pop eax"),
-        (PopInstr(edx), "5A", "pop edx"),
-        (PopInstr(ebp), "5D", "pop ebp")
+        (SyscallInstr(), "0f05", "syscall")
     ]
 
-class TestRetInstruction(TestInstruction):
+class TestPushRegInstruction(TestInstruction):
     simpleTestCases = [
-        (RetInstr(), "C3", "ret")
+        # 64 bit
+        (PushRegInstr(rax), "50", "push rax"),
+        (PushRegInstr(rsp), "54", "push rsp"),
+        (PushRegInstr(r8), "4150", "push r8"),
+        (PushRegInstr(r15), "4157", "push r15"),
+
+        # 16 bit
+        (PushRegInstr(bx), "6653", "push bx"),
+        (PushRegInstr(bp), "6655", "push bp"),
+        (PushRegInstr(r10w), "664152", "push r10w"),
+        (PushRegInstr(r12w), "664154", "push r12w")
     ]
 
-class TestAddRegToRegInstruction(TestInstruction):
+class TestPopRegInstruction(TestInstruction):
     simpleTestCases = [
-        (AddRegToRegInstr(eax, edx), "01D0", "add eax, edx"),
-        (AddRegToRegInstr(ecx, ecx), "01C9", "add ecx, ecx")
-    ]
+        # 64 bit
+        (PopRegInstr(rax), "58", "pop rax"),
+        (PopRegInstr(rsp), "5c", "pop rsp"),
+        (PopRegInstr(r8), "4158", "pop r8"),
+        (PopRegInstr(r15), "415f", "pop r15"),
 
-class TestMovRegToRegInstruction(TestInstruction):
-    simpleTestCases = [
-        (MovRegToRegInstr(ebx, edx), "89D3", "mov ebx, edx"),
-        (MovRegToRegInstr(eax, ebx), "89D8", "mov eax, ebx"),
-        (MovRegToRegInstr(ebp, esp), "89E5", "mov ebp, esp"),
-        (MovRegToRegInstr(esp, ebp), "89EC", "mov esp, ebp")
+        # 16 bit
+        (PopRegInstr(bx), "665b", "pop bx"),
+        (PopRegInstr(bp), "665d", "pop bp"),
+        (PopRegInstr(r10w), "66415a", "pop r10w"),
+        (PopRegInstr(r12w), "66415c", "pop r12w")
     ]
-
-class TestIncInstruction(TestInstruction):
-    simpleTestCases = [
-        (IncInstr(eax), "40", "inc eax"),
-        (IncInstr(ebx), "43", "inc ebx")
-    ]
-
-class TestDecInstruction(TestInstruction):
-    simpleTestCases = [
-        (DecInstr(eax), "48", "dec eax"),
-        (DecInstr(ebx), "4B", "dec ebx")
-    ]
-
-class TestMovImmToRegInstruction(TestInstruction):
-    simpleTestCases = [
-        (MovImmToRegInstr(eax, 0), "B800000000", "mov eax, 0"),
-        (MovImmToRegInstr(ecx, 2049), "B901080000", "mov ecx, 2049")
-    ]
-
-class TestMovMemOffsetToRegInstr(TestInstruction):
-    simpleTestCases = [
-        (MovMemOffsetToRegInstr(eax, ebx, 100000), "8B83A0860100", "mov eax, [ebx + 100000]"),
-        (MovMemOffsetToRegInstr(eax, ebx, -100000), "8B836079FEFF", "mov eax, [ebx - 100000]"),
-        (MovMemOffsetToRegInstr(eax, esp, 100000), "8B8424A0860100", "mov eax, [esp + 100000]")
-    ]
-
-class TextAddImmToRegInstr(TestInstruction):
-    simpleTestCases = [
-        (AddImmToRegInstr(ebx, 1000), "81C3E8030000", "add ebx, 1000")
-    ]
-'''

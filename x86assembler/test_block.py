@@ -2,15 +2,16 @@ import unittest
 
 from . bits import Bits
 from . block import Block
-'''
-from . instructions import PushInstr, RetInstr, AddRegToRegInstr
-from . registers import eax, ebx, ecx, edx
+from . instructions import PushRegInstr, RetInstr, AddImmToRegInstr
+from . registers import allRegisters
+
+globals().update(allRegisters)
 
 class TestBlock(unittest.TestCase):
     def testToIntelSyntax(self):
         instructions = [
-            PushInstr(eax),
-            AddRegToRegInstr(ecx, ebx),
+            PushRegInstr(rax),
+            AddImmToRegInstr(ecx, 10),
             RetInstr()
         ]
         intelSyntax = "\n".join((
@@ -24,8 +25,8 @@ class TestBlock(unittest.TestCase):
     def testToMachineCode(self):
         instructions = [
             RetInstr(),
-            PushInstr(ebx),
-            AddRegToRegInstr(eax, edx)
+            PushRegInstr(rbx),
+            AddImmToRegInstr(eax, 12)
         ]
         machineCode = Bits.join(
             instructions[0].toMachineCode(),
@@ -34,4 +35,3 @@ class TestBlock(unittest.TestCase):
         )
         block = Block(instructions)
         self.assertEqual(block.toMachineCode(), machineCode)
-'''

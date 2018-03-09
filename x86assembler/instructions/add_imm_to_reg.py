@@ -34,7 +34,7 @@ class AddImmToRegInstr(Instruction):
 
     def getBaseMachineCode(self, allow16Bit = False):
         immSize = getImmSize(self.value)
-        if immSize == 1:
+        if immSize <= 1:
             opcode = Bits.fromHex("83")
             arguments = Bits("11000") + self.reg.bits
             imm = self.getImmBits(length = 8)
