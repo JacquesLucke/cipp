@@ -2,6 +2,7 @@ import unittest
 
 from . bits import Bits
 from . block import Block
+'''
 from . instructions import PushInstr, RetInstr, AddRegToRegInstr
 from . registers import eax, ebx, ecx, edx
 
@@ -33,3 +34,4 @@ class TestBlock(unittest.TestCase):
         )
         block = Block(instructions)
         self.assertEqual(block.toMachineCode(), machineCode)
+'''

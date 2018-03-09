@@ -1,4 +1,4 @@
-from . bits import Bits
+from .. bits import Bits
 
 class Instruction:
     def toMachineCode(self):
@@ -8,7 +8,7 @@ class Instruction:
         raise NotImplementedError()
 
     def __repr__(self):
-        return self.toString()
+        return self.toIntelSyntax()
 
 
 class RetInstr(Instruction):
@@ -92,21 +92,14 @@ class MovMemOffsetToRegInstr(Instruction):
 
     def toMachineCode(self):
         opcode = Bits.fromHex("8B")
-        targetReg = self.target.bits
-        addrReg = self.addrReg.bits
-        if self.offset == 0:
-            if addrReg == "100": # special case esp
-                pass
-            else:
-                mod = Bits("00")
-                immOffset = Bits("")
-        elif -128 <= self.offset <= 127:
-            mod = Bits("01")
-            immOffset = Bits.fromInt(self.offset, length = 8)
+        immOffset = Bits.fromInt(self.offset, length = 32).reversedBytes()
+        if self.addrReg.bits == "100":
+            return Bits.join(Bits.fromHex("8B8424"), immOffset)
         else:
+            targetReg = self.target.bits
+            addrReg = self.addrReg.bits
             mod = Bits("10")
-            immOffset = Bits.fromInt(self.offset, length = 32).reversedBytes()
-        return Bits.join(opcode, mod, targetReg, addrReg, immOffset)
+            return Bits.join(opcode, mod, targetReg, addrReg, immOffset)
 
     def toIntelSyntax(self):
         if self.offset > 0:
@@ -116,6 +109,32 @@ class MovMemOffsetToRegInstr(Instruction):
         else:
             return f"mov {self.target.name}, [{self.addrReg.name}]"
 
+class AddImmToRegInstr(Instruction):
+    def __init__(self, reg, imm):
+        self.reg = reg
+        self.imm = imm
+
+    def toMachineCode(self):
+        opcode = Bits.fromHex("81")
+        mod = Bits("11")
+        reg = Bits("000")
+        rm = self.reg.bits
+        imm = Bits.fromInt(self.imm, length = 32).reversedBytes()
+        return Bits.join(opcode, mod, reg, rm, imm)
+
+    def toIntelSyntax(self):
+        return f"add {self.reg.name}, {self.imm}"
+
 
 def intFromHex(hexcode):
     return int(hexcode, base = 16)
+
+def getMinImmSize(n):
+    if n == 0:
+        return 0
+    elif -2**7 <= n <= 2**7 - 1:
+        return 1
+    elif -2**15 <= n <= 2**15 - 1:
+        return 2
+    else:
+        return 4

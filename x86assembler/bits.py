@@ -57,7 +57,8 @@ class Bits:
         return len(self._bits)
 
     def __repr__(self):
-        return f"<Bits: {self._bits}>"
+        text = self.toHex() if len(self) % 4 == 0 else self._bits
+        return f"<Bits: {text}>"
 
     def __int__(self):
         return int(self._bits, base = 2)
