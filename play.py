@@ -1,9 +1,9 @@
 from array import array
 from exec_utils import createFunctionFromHex
 
-from x86assembler.block import Block
-from x86assembler.registers import allRegisters
-from x86assembler.instructions import AddImmToRegInstr, MovRegToRegInstr, RetInstr, PushRegInstr, PopRegInstr, SyscallInstr, MovImmToRegInstr, PushImmInstr
+from x64assembler.block import Block
+from x64assembler.registers import allRegisters
+from x64assembler.instructions import AddImmToRegInstr, MovRegToRegInstr, RetInstr, PushRegInstr, PopRegInstr, SyscallInstr, MovImmToRegInstr, PushImmInstr
 
 globals().update(allRegisters)
 
