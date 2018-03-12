@@ -1,6 +1,6 @@
 from .. bits import Bits
 from . instruction import Instruction
-from . mov_reg_to_reg import prefixesFor64BitMoves
+from . utils import getRegGroupPrefix_64
 
 class MovRegToMemInstr(Instruction):
     def __init__(self, addrReg, srcReg, offset = 0):
@@ -17,7 +17,7 @@ class MovRegToMemInstr(Instruction):
             raise NotImplementedError()
 
     def toMachineCode_64(self):
-        prefix = prefixesFor64BitMoves[(self.addrReg.group, self.srcReg.group)]
+        prefix = getRegGroupPrefix_64(self.addrReg, self.srcReg)
         opcode = Bits.fromHex("89")
         if self.addrReg.number == 5: # special case for rbp and r13
             arguments = Bits("01") + self.srcReg.bits + self.addrReg.bits

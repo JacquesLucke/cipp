@@ -226,3 +226,37 @@ class TestMovRegToMemInstruction(TestInstruction):
         ([rbp, rcx], "48894d00", "mov [rbp], rcx"),
         ([r12, r8], "4d890424", "mov [r12], r8")
     ]
+
+class TestAddRegToRegInstruction(TestInstruction):
+    instruction = AddRegToRegInstr
+    simpleTestCases = [
+        # 64 bit
+        ([rax, rax], "4801c0", "add rax, rax"),
+        ([rdx, rsp], "4801e2", "add rdx, rsp"),
+        ([r13, r15], "4d01fd", "add r13, r15"),
+        ([r8, r10], "4d01d0", "add r8, r10"),
+        ([rbx, r13], "4c01eb", "add rbx, r13"),
+        ([rdi, r14], "4c01f7", "add rdi, r14"),
+        ([r9, rbp], "4901e9", "add r9, rbp"),
+        ([r11, rsp], "4901e3", "add r11, rsp"),
+
+        # 32 bit
+        ([eax, eax], "01c0", "add eax, eax"),
+        ([edx, esp], "01e2", "add edx, esp"),
+        ([r13d, r15d], "4501fd", "add r13d, r15d"),
+        ([r8d, r10d], "4501d0", "add r8d, r10d"),
+        ([ebx, r13d], "4401eb", "add ebx, r13d"),
+        ([edi, r14d], "4401f7", "add edi, r14d"),
+        ([r9d, ebp], "4101e9", "add r9d, ebp"),
+        ([r11d, esp], "4101e3", "add r11d, esp"),
+
+        # 16 bit
+        ([ax, ax], "6601c0", "add ax, ax"),
+        ([dx, sp], "6601e2", "add dx, sp"),
+        ([r13w, r15w], "664501fd", "add r13w, r15w"),
+        ([r8w, r10w], "664501d0", "add r8w, r10w"),
+        ([bx, r13w], "664401eb", "add bx, r13w"),
+        ([di, r14w], "664401f7", "add di, r14w"),
+        ([r9w, bp], "664101e9", "add r9w, bp"),
+        ([r11w, sp], "664101e3", "add r11w, sp")
+    ]
