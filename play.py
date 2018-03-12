@@ -2,31 +2,25 @@ from array import array
 
 from x86assembler.block import Block
 from x86assembler.registers import allRegisters
-from x86assembler.instructions import AddImmToRegInstr, MovRegToRegInstr, RetInstr, PushRegInstr, PopRegInstr, SyscallInstr
+from x86assembler.instructions import AddImmToRegInstr, MovRegToRegInstr, RetInstr, PushRegInstr, PopRegInstr, SyscallInstr, MovImmToRegInstr, PushImmInstr
 
 globals().update(allRegisters)
 
 '''
 Yes
-89 101 115
+89 101 115 10
 
-01011001 01100101 01110011
+01011001 01100101 01110011 00001010
 '''
 
 instructions = [
-    MovRegToRegInstr(rcx, rdi),
-    AddImmToRegInstr(rcx, 7562585),
+    MovImmToRegInstr(rcx, 0x0a736559),
     PushRegInstr(rcx), # write 'Yes' to stack
 
-    MovRegToRegInstr(rax, rdi),
-    MovRegToRegInstr(rsi, rdi),
-    MovRegToRegInstr(rdx, rdi),
-
-    AddImmToRegInstr(rax, 1), # use write syscall
-    AddImmToRegInstr(rdi, 1), # write to stdout
+    MovImmToRegInstr(rax, 1), # use write syscall
+    MovImmToRegInstr(rdi, 1), # write to stdout
     MovRegToRegInstr(rsi, rsp), # write what is on the stack
-    AddImmToRegInstr(rsi, 0), # (optionally move write start)
-    AddImmToRegInstr(rdx, 3), # write 3 symbols
+    MovImmToRegInstr(rdx, 4), # amount of symbols
     SyscallInstr(),
 
     PopRegInstr(rcx),
