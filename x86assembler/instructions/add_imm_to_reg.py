@@ -1,6 +1,7 @@
 from .. bits import Bits
 from .. registers import rax, eax, ax
 from . instruction import Instruction
+from . utils import getImmSize
 
 class AddImmToRegInstr(Instruction):
     def __init__(self, reg, value):
@@ -52,13 +53,3 @@ class AddImmToRegInstr(Instruction):
 
     def getImmBits(self, length):
         return Bits.fromInt(self.value, length).reversedBytes()
-
-def getImmSize(n):
-    if n == 0:
-        return 0
-    elif -2**7 <= n <= 2**7 - 1:
-        return 1
-    elif -2**15 <= n <= 2**15 - 1:
-        return 2
-    else:
-        return 4

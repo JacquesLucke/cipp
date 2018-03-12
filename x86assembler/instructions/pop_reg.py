@@ -19,8 +19,7 @@ class PopRegInstr(Instruction):
 
     def toMachineCode_64(self):
         prefix = Bits.fromHex("" if self.reg.group == 0 else "41")
-        opcodeInt = int("58", base = 16) + self.reg.number
-        opcode = Bits.fromInt(opcodeInt, length = 8)
+        opcode = Bits.fromHexAndOffset("58", self.reg.number)
         return prefix + opcode
 
     def toMachineCode_16(self):

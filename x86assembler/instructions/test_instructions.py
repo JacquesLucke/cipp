@@ -8,7 +8,9 @@ import unittest
 from .. bits import Bits
 from .. registers import allRegisters
 from . mov_reg_to_reg import MovRegToRegInstr
+from . mov_imm_to_reg import MovImmToRegInstr
 from . add_imm_to_reg import AddImmToRegInstr
+from . push_imm import PushImmInstr
 from . push_reg import PushRegInstr
 from . syscall import SyscallInstr
 from . pop_reg import PopRegInstr
@@ -119,7 +121,8 @@ class TestAddImmToRegInstruction(TestInstruction):
 class TestRetnInstruction(TestInstruction):
     simpleTestCases = [
         (RetInstr(), "c3", "ret"),
-        (RetInstr(1234), "c2d204", "ret 1234")
+        (RetInstr(1234), "c2d204", "ret 1234"),
+        (RetInstr(8), "c20800", "ret 8")
     ]
 
 class TestSyscallInstruction(TestInstruction):
@@ -155,4 +158,27 @@ class TestPopRegInstruction(TestInstruction):
         (PopRegInstr(bp), "665d", "pop bp"),
         (PopRegInstr(r10w), "66415a", "pop r10w"),
         (PopRegInstr(r12w), "66415c", "pop r12w")
+    ]
+
+class TestMovImmToRegInstruction(TestInstruction):
+    simpleTestCases = [
+        (MovImmToRegInstr(rax, 20), "48c7c014000000", "mov rax, 20"),
+        (MovImmToRegInstr(rbp, 40), "48c7c528000000", "mov rbp, 40"),
+        (MovImmToRegInstr(rsp, 1234567), "48c7c487d61200", "mov rsp, 1234567"),
+        (MovImmToRegInstr(r8, 20), "49c7c014000000", "mov r8, 20"),
+        (MovImmToRegInstr(r14, 42), "49c7c62a000000", "mov r14, 42"),
+        (MovImmToRegInstr(rbx, 1345678900), "48C7C3346E3550", "mov rbx, 1345678900"),
+        (MovImmToRegInstr(rdx, 98765432111), "48ba2fe5e0fe16000000", "mov rdx, 98765432111"),
+        (MovImmToRegInstr(r8, -1234567890000), "49b8b0fb048ee0feffff", "mov r8, -1234567890000"),
+        (MovImmToRegInstr(r12, 12345678900000000001), "49bc010889a18ca954ab", "mov r12, 12345678900000000001")
+    ]
+
+class TestPushImmInstruction(TestInstruction):
+    simpleTestCases = [
+        (PushImmInstr(10), "6a0a", "push 10"),
+        (PushImmInstr(-12), "6af4", "push -12"),
+        (PushImmInstr(550), "6826020000", "push 550"),
+        (PushImmInstr(-4600), "6808eeffff", "push -4600"),
+        (PushImmInstr(12345678), "684e61bc00", "push 12345678"),
+        (PushImmInstr(987654321), "68b168de3a", "push 987654321")
     ]

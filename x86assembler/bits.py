@@ -18,11 +18,17 @@ class Bits:
 
     @classmethod
     def fromHex(cls, hexNumber):
+        if hexNumber.startswith("0x"):
+            hexNumber = hexNumber[2:]
         if len(hexNumber) == 0:
             return Bits("")
         number = int(hexNumber, base = 16)
         length = len(hexNumber) * 4
         return cls.fromInt(number, length)
+
+    @classmethod
+    def fromHexAndOffset(cls, hexNumber, offset):
+        return cls.fromHex(hex(int(hexNumber, base = 16) + offset))
 
     @classmethod
     def join(cls, *args):
