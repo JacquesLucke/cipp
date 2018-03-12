@@ -3,7 +3,11 @@ from exec_utils import createFunctionFromHex
 
 from x64assembler.block import Block
 from x64assembler.registers import allRegisters
-from x64assembler.instructions import AddImmToRegInstr, MovRegToRegInstr, RetInstr, PushRegInstr, PopRegInstr, SyscallInstr, MovImmToRegInstr, PushImmInstr
+from x64assembler.instructions import (
+    AddImmToRegInstr, MovRegToRegInstr, RetInstr, 
+    PushRegInstr, PopRegInstr, SyscallInstr, 
+    MovImmToRegInstr, PushImmInstr, AddRegToRegInstr
+)
 
 globals().update(allRegisters)
 
@@ -29,17 +33,26 @@ instructions1 = [
     RetInstr()
 ]
 
+'''
+calling convention (on linux):
+arguments: rdi, rsi, rdx, rcx, r8, r9
+don't change: rbx, rbp, r12, r13, r14, r15
+'''
+
 instructions2 = [
-    MovImmToRegInstr(rax, 42),
+    MovImmToRegInstr(rax, 0),
+    AddRegToRegInstr(rax, rdi),
+    AddRegToRegInstr(rax, rsi),
+    AddRegToRegInstr(rax, rdx),
     RetInstr()
 ]
 
-block = Block(instructions1)
+block = Block(instructions2)
 print(block.toIntelSyntax())
 print(block.toMachineCode())
 
 from ctypes import c_int, CFUNCTYPE
-functype = CFUNCTYPE(c_int, c_int)
+functype = CFUNCTYPE(c_int, c_int, c_int, c_int)
 func = createFunctionFromHex(functype, block.toMachineCode().toHex())
-result = func(0)
+result = func(32, 45, 3)
 print(result)
