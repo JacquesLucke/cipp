@@ -1,4 +1,5 @@
 from . add_imm_to_reg import AddImmToRegInstr
+from . add_reg_to_reg import AddRegToRegInstr
 from . mov_imm_to_reg import MovImmToRegInstr
 from . mov_reg_to_reg import MovRegToRegInstr
 from . mov_mem_to_reg import MovMemToRegInstr
