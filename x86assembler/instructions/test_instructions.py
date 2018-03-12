@@ -9,6 +9,8 @@ from .. bits import Bits
 from .. registers import allRegisters
 from . mov_reg_to_reg import MovRegToRegInstr
 from . mov_imm_to_reg import MovImmToRegInstr
+from . mov_mem_to_reg import MovMemToRegInstr
+from . mov_reg_to_mem import MovRegToMemInstr
 from . add_imm_to_reg import AddImmToRegInstr
 from . push_imm import PushImmInstr
 from . push_reg import PushRegInstr
@@ -181,4 +183,34 @@ class TestPushImmInstruction(TestInstruction):
         (PushImmInstr(-4600), "6808eeffff", "push -4600"),
         (PushImmInstr(12345678), "684e61bc00", "push 12345678"),
         (PushImmInstr(987654321), "68b168de3a", "push 987654321")
+    ]
+
+class TestMovMemToRegInstruction(TestInstruction):
+    simpleTestCases = [
+        (MovMemToRegInstr(rax, rax), "488b00", "mov rax, [rax]"),
+        (MovMemToRegInstr(rbx, rdx), "488b1a", "mov rbx, [rdx]"),
+        (MovMemToRegInstr(r8, r8), "4d8b00", "mov r8, [r8]"),
+        (MovMemToRegInstr(r12, r15), "4d8b27", "mov r12, [r15]"),
+        (MovMemToRegInstr(r10, rax), "4c8b10", "mov r10, [rax]"),
+        (MovMemToRegInstr(r11, rbx), "4c8b1b", "mov r11, [rbx]"),
+        (MovMemToRegInstr(rax, r11), "498b03", "mov rax, [r11]"),
+
+        (MovMemToRegInstr(rax, rsp), "488b0424", "mov rax, [rsp]"),
+        (MovMemToRegInstr(rax, rbp), "488b4500", "mov rax, [rbp]"),
+        (MovMemToRegInstr(rbx, r13), "498b5d00", "mov rbx, [r13]"),
+        (MovMemToRegInstr(rdx, r12), "498b1424", "mov rdx, [r12]")
+    ]
+
+class TestMovRegToMemInstruction(TestInstruction):
+    simpleTestCases = [
+        (MovRegToMemInstr(rax, rax), "488900", "mov [rax], rax"),
+        (MovRegToMemInstr(rbx, rdx), "488913", "mov [rbx], rdx"),
+        (MovRegToMemInstr(r15, r9), "4d890f", "mov [r15], r9"),
+        (MovRegToMemInstr(rax, r10), "4c8910", "mov [rax], r10"),
+        (MovRegToMemInstr(r14, rsp), "498926", "mov [r14], rsp"),
+        (MovRegToMemInstr(r14, rax), "498906", "mov [r14], rax"),
+
+        (MovRegToMemInstr(rsp, rax), "48890424", "mov [rsp], rax"),
+        (MovRegToMemInstr(rbp, rcx), "48894d00", "mov [rbp], rcx"),
+        (MovRegToMemInstr(r12, r8), "4d890424", "mov [r12], r8")
     ]
