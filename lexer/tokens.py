@@ -16,14 +16,23 @@ class SingleCharToken(Token):
             raise Exception("expected class to have a single char")
 
 
-class BracketOpenToken(SingleCharToken):
+class RoundBracketOpenToken(SingleCharToken):
     char = "("
 
-class BracketCloseToken(SingleCharToken):
+class RoundBracketCloseToken(SingleCharToken):
     char = ")"
 
 class CommaToken(SingleCharToken):
     char = ","
+
+class EqualToken(SingleCharToken):
+    char = "="
+
+class CurlyRoundBracketOpenToken(SingleCharToken):
+    char = "{"
+
+class CurlyRoundBracketCloseToken(SingleCharToken):
+    char = "}"
 
 class WhitespaceToken(Token):
     whitespaceChars = tuple(" \t\n\r")

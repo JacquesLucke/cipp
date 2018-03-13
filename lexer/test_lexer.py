@@ -1,12 +1,12 @@
 import unittest
 from . lexer import Lexer
 from . tokens import (
-    BracketOpenToken, BracketCloseToken, CommaToken,
+    RoundBracketOpenToken, RoundBracketCloseToken, CommaToken,
     WhitespaceToken, IdentifierToken, IntegerToken
 )
 
 bracketLexer = Lexer(
-    [BracketOpenToken, BracketCloseToken, WhitespaceToken],
+    [RoundBracketOpenToken, RoundBracketCloseToken, WhitespaceToken],
     ignoredTokenTypes = [WhitespaceToken]
 )
 
@@ -29,11 +29,11 @@ class TestLexer(unittest.TestCase):
     def testBracketLexer(self):
         self.assertLexerResult(" (( )(  ) ", bracketLexer,
             '''
-            <BracketOpenToken>
-            <BracketOpenToken>
-            <BracketCloseToken>
-            <BracketOpenToken>
-            <BracketCloseToken>
+            <RoundBracketOpenToken>
+            <RoundBracketOpenToken>
+            <RoundBracketCloseToken>
+            <RoundBracketOpenToken>
+            <RoundBracketCloseToken>
             ''')
 
     def testUnknownToken(self):
