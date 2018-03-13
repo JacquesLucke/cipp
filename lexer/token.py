@@ -1,8 +1,9 @@
-class Token:
+class CharState:
     CONSUMED = 1
-    CONSUMED_LAST = 2
-    NOT_CONSUMED = 3
+    NOT_CONSUMED = 2
+    INVALID = 3
 
+class Token:
     @classmethod
     def startswith(cls, char):
         raise NotImplementedError()
@@ -11,16 +12,11 @@ class Token:
         pass
 
     def checkNext(self, char):
-        '''
-        returns one of following constants:
-            CONSUMED
-            CONSUMED_LAST
-            NOT_CONSUMED
-        '''
+        '''return CharState'''
         raise NotImplementedError()
 
     def isFinished(self):
-        raise NotImplementedError()
+        return True
 
     def __repr__(self):
         return f"<{type(self).__name__}>"

@@ -1,4 +1,4 @@
-from . token import Token
+from . token import Token, CharState
 
 class SingleCharToken(Token):
     char = NotImplemented
@@ -8,10 +8,7 @@ class SingleCharToken(Token):
         return cls.char == char
 
     def checkNext(self, char):
-        return Token.NOT_CONSUMED
-
-    def isFinished(self):
-        return True
+        return CharState.NOT_CONSUMED
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -37,33 +34,53 @@ class WhitespaceToken(Token):
 
     def checkNext(self, char):
         if char in self.whitespaceChars:
-            return Token.CONSUMED
+            return CharState.CONSUMED
         else:
-            return Token.NOT_CONSUMED
-
-    def isFinished(self):
-        return True
+            return CharState.NOT_CONSUMED
 
 asciiLowerCase = "abcdefghijklmnopqrstuvwxyz"
 asciiUpperCase = asciiLowerCase.upper()
 asciiLetters = asciiLowerCase + asciiUpperCase
 digits = "0123456789"
 
-class NameToken(Token):
-
+class IdentifierToken(Token):
     @classmethod
     def startswith(cls, char):
-        return char in asciiLetters
+        return char in asciiLetters or char == "_"
 
     def __init__(self, firstChar):
         self.content = firstChar
 
     def checkNext(self, char):
-        if char in asciiLetters or char in digits:
+        if char in asciiLetters or char in digits or char == "_":
             self.content += char
-            return Token.CONSUMED
+            return CharState.CONSUMED
         else:
-            return Token.NOT_CONSUMED
+            return CharState.NOT_CONSUMED
 
     def __repr__(self):
         return f"<{type(self).__name__}: {self.content}>"
+
+class IntegerToken(Token):
+    @classmethod
+    def startswith(cls, char):
+        return char in digits
+
+    def __init__(self, firstChar):
+        self.content = firstChar
+
+    def checkNext(self, char):
+        if char in digits:
+            self.content += char
+            return CharState.CONSUMED
+        elif char in asciiLetters:
+            return CharState.INVALID
+        else:
+            return CharState.NOT_CONSUMED
+
+    @property
+    def number(self):
+        return int(self.content)
+
+    def __repr__(self):
+        return f"<{type(self).__name__}: {self.number}>"
