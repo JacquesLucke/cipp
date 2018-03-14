@@ -37,8 +37,14 @@ class CurlyRoundBracketCloseToken(SingleCharToken):
 class PlusToken(SingleCharToken):
     char = "+"
 
+class MinusToken(SingleCharToken):
+    char = "-"
+
 class StarToken(SingleCharToken):
     char = "*"
+
+class SlashToken(SingleCharToken):
+    char = "/"
 
 class WhitespaceToken(Token):
     whitespaceChars = tuple(" \t\n\r")
