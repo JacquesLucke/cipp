@@ -79,6 +79,46 @@ class TestFirstAndFollow(unittest.TestCase):
         self.assertEqual(g.first(B), {None, PlusToken})
         self.assertEqual(g.follow(A), {"$"})
         self.assertEqual(g.follow(B), {"$"})
+    
+    def testGrammar5(self):
+        A = NonTerminalSymbol("A")
+        B = NonTerminalSymbol("B")
+        C = NonTerminalSymbol("C")
+
+        rules = {
+            A : [[B, C]],
+            B : [[]],
+            C : [[PlusToken]]
+        }
+
+        g = Grammar(A, rules)
+
+        self.assertEqual(g.first(A), {PlusToken})
+        self.assertEqual(g.first(B), {None})
+        self.assertEqual(g.first(C), {PlusToken})
+        self.assertEqual(g.follow(A), {"$"})
+        self.assertEqual(g.follow(B), {PlusToken})
+        self.assertEqual(g.follow(C), {"$"})
+
+        self.assertEqual(g.first([B, C]), {PlusToken})
+
+    def testGrammar6(self):
+        A = NonTerminalSymbol("A")
+        B = NonTerminalSymbol("B")
+        C = NonTerminalSymbol("C")
+        D = NonTerminalSymbol("D")
+
+        rules = {
+            A : [[B]],
+            B : [[]],
+            C : [[PlusToken]]
+        }
+
+        g = Grammar(A, rules)
+
+        self.assertEqual(g.first(A), {None})
+        self.assertEqual(g.first(B), {None})
+        self.assertEqual(g.first([A, C]), {PlusToken})
 
 class TestGetTerminals(unittest.TestCase):
     def testSimple(self):

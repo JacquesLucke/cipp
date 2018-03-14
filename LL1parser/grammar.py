@@ -26,7 +26,7 @@ class Grammar:
 
         for production in self.rules[elements[0]]:
             if len(production) == 0:
-                firstSet.add(None)
+                firstSet.update(self.first(elements[1:]))
             else:
                 if isTokenClass(production[0]):
                     firstSet.add(production[0])
@@ -34,7 +34,7 @@ class Grammar:
                     f = self.first(production[0])
                     if None in f:
                         firstSet.update(f - {None})
-                        firstSet.update(self.first(elements[1:]))
+                        firstSet.update(self.first(production[1:] + elements[1:]))
                     else:
                         firstSet.update(f)
         
@@ -80,6 +80,21 @@ class Grammar:
             terminals.update(filter(lambda x: isTokenClass(x), production))
         return terminals
 
+    def createParsingTable(self):
+        table = {}
+
+        for symbol, production in self.iterProductions():
+            f = self.first(symbol)
+            for token in f:
+                if token is not None:
+                    table[(symbol, token)] = production
+            
+            if None in f:
+                for token in self.follow(symbol):
+                    table[(symbol, token)] = production
+
+        return table
+
 class NonTerminalSymbol:
     def __init__(self, name):
         self.name = name
@@ -96,4 +111,4 @@ class NonTerminalSymbol:
         return hash(self.name)
 
     def __repr__(self):
-        return f"<Symbol: {self.name}>"
+        return self.name

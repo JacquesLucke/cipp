@@ -105,3 +105,23 @@ class IntegerToken(Token):
 
     def __repr__(self):
         return f"<{type(self).__name__}: {self.number}>"
+
+
+
+def createTokenTypeFromLetter(letter):
+    class ReprMeta(type):
+        def __repr__(cls):
+            return letter
+
+    class LetterToken(Token, metaclass = ReprMeta):
+        @classmethod
+        def startswith(cls, char):
+            return letter == char
+
+        def checkNext(self, char):
+            return CharState.NOT_CONSUMED
+
+        def __repr__(self):
+            return letter
+
+    return LetterToken
