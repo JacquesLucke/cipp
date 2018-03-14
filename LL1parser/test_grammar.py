@@ -3,7 +3,8 @@ from . grammar import Grammar, NonTerminalSymbol
 
 from lexer.tokens import (
     StarToken, PlusToken, IdentifierToken,
-    RoundBracketOpenToken, RoundBracketCloseToken
+    RoundBracketOpenToken, RoundBracketCloseToken,
+    createTokenTypeFromLetter
 )
 
 class TestFirstAndFollow(unittest.TestCase):
@@ -133,3 +134,49 @@ class TestGetTerminals(unittest.TestCase):
         g = Grammar(A, rules)
 
         self.assertEqual(g.getTerminals(), {StarToken, PlusToken, RoundBracketOpenToken})
+
+class TestParsingTableCreation(unittest.TestCase):
+    def testSimple(self):
+        # https://www.hsg-kl.de/faecher/inf/compiler/parser/LL1/index.php
+
+        S = NonTerminalSymbol("S")
+        A = NonTerminalSymbol("A")
+        B = NonTerminalSymbol("B")
+        C = NonTerminalSymbol("C")
+
+        a = createTokenTypeFromLetter("a")
+        b = createTokenTypeFromLetter("b")
+        c = createTokenTypeFromLetter("c")
+
+        rules = {
+            S : [[A, B, c, C]],
+            A : [[a, A], []],
+            B : [[b, b, B], []],
+            C : [[B, A]]
+        }
+
+        grammar = Grammar(S, rules)
+        table = grammar.createParsingTable()
+
+        self.assertEqual(table[(S, a)], [A, B, c, C])
+        self.assertEqual(table[(S, b)], [A, B, c, C])
+        self.assertEqual(table[(S, c)], [A, B, c, C])
+
+        self.assertEqual(table[(A, a)], [a, A])
+        self.assertEqual(table[(A, b)], [])
+        self.assertEqual(table[(A, c)], [])
+        self.assertEqual(table[(A, "$")], [])
+
+        self.assertEqual(table[(B, a)], [])
+        self.assertEqual(table[(B, b)], [b, b, B])
+        self.assertEqual(table[(B, c)], [])
+        self.assertEqual(table[(B, "$")], [])
+
+        self.assertEqual(table[(C, a)], [B, A])
+        self.assertEqual(table[(C, b)], [B, A])
+        self.assertEqual(table[(C, "$")], [B, A])
+
+        with self.assertRaises(KeyError):
+            table[(S, "$")]
+        with self.assertRaises(KeyError):
+            table[(C, c)]

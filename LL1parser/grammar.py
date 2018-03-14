@@ -84,7 +84,7 @@ class Grammar:
         table = {}
 
         for symbol, production in self.iterProductions():
-            f = self.first(symbol)
+            f = self.first(production)
             for token in f:
                 if token is not None:
                     table[(symbol, token)] = production
