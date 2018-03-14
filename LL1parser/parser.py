@@ -1,26 +1,29 @@
-class TokenStream:
-    def __init__(self, tokens):
-        self.tokens = tokens
-        self.position = 0
+from . grammar import Grammar, NonTerminalSymbol
+from . token_stream import TokenStream, EOFToken
 
-    def take(self, n):
-        tokens = self.getLookahead(n)
-        self.position += n
-        return tokens
+def checkIfStringMatchesGrammar(string, lexer, grammar):
+    tokens = list(lexer.tokenize(string))
+    checkIfTokenStreamMatchesGrammar(TokenStream(tokens), grammar)
 
-    def takeOrFail(self, tokenType):
-        if isinstance(self.peekNext(), tokenType):
-            return self.take(1)[0]
+def checkIfTokenStreamMatchesGrammar(tokens, grammar):
+    table = grammar.createParsingTable()
+    stack = [EOFToken, grammar.start]
+
+    while len(stack) > 0:
+        stackTop = stack.pop()
+        token = tokens.peekNext()
+        tokenType = type(token)
+
+        if isinstance(stackTop, NonTerminalSymbol):
+            entry = (stackTop, tokenType)
+            if entry in table:
+                stack.extend(table[entry][::-1])
+            else:
+                raise Exception(f"no parser table entry for {entry}")
+        elif stackTop == tokenType:
+            tokens.take(1)
         else:
-            raise Exception(f"found unexpected token: {self.peekNext()}")
+            raise Exception(f"unexpected token: {token}")
 
-    def getLookahead(self, n):
-        if len(self) < n:
-            raise Exception(f"cannot look ahead {n} tokens, only {len(self)} available")
-        return self.tokens[self.position:self.position+n]
-
-    def peekNext(self):
-        return self.getLookahead(1)[0]
-
-    def __len__(self):
-        return len(self.tokens) - self.position
+    if len(stack) > 0:
+        raise Exception("missing tokens at the end")
