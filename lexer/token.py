@@ -21,6 +21,7 @@ class Token:
     def __repr__(self):
         return f"<{type(self).__name__}>"
 
-    
-
+def isTokenClass(element):
+    try: return issubclass(element, Token)
+    except: return False
     
