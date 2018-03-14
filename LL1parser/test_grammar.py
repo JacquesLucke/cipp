@@ -63,3 +63,33 @@ class TestFirstAndFollow(unittest.TestCase):
         self.assertEqual(g.follow(T), {PlusToken, "$", RoundBracketCloseToken})
         self.assertEqual(g.follow(T2), {PlusToken, "$", RoundBracketCloseToken})
         self.assertEqual(g.follow(F), {StarToken, PlusToken, "$", RoundBracketCloseToken})
+
+    def testGrammar4(self):
+        A = NonTerminalSymbol("A")
+        B = NonTerminalSymbol("B")
+
+        rules = {
+            A : [[PlusToken, B]],
+            B : [[A], []]
+        }
+
+        g = Grammar(A, rules)
+
+        self.assertEqual(g.first(A), {PlusToken})
+        self.assertEqual(g.first(B), {None, PlusToken})
+        self.assertEqual(g.follow(A), {"$"})
+        self.assertEqual(g.follow(B), {"$"})
+
+class TestGetTerminals(unittest.TestCase):
+    def testSimple(self):
+        A = NonTerminalSymbol("A")
+        B = NonTerminalSymbol("B")
+
+        rules = {
+            A : [[StarToken, B, PlusToken], [PlusToken]],
+            B : [[RoundBracketOpenToken]]
+        }
+
+        g = Grammar(A, rules)
+
+        self.assertEqual(g.getTerminals(), {StarToken, PlusToken, RoundBracketOpenToken})

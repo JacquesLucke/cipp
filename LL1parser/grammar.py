@@ -46,6 +46,9 @@ class Grammar:
         The resulting set can also contain "$" which means that the 
         input stream is allowed to end after the symbol.
         '''
+        return self._follow(symbol, set())
+
+    def _follow(self, symbol, seenRules):
         followSet = set()
 
         if self.start == symbol:
@@ -55,8 +58,11 @@ class Grammar:
             index = production.index(symbol)
             f = self.first(production[index+1:])
             followSet.update(f - {None})
-            if None in f and src != symbol:
-                followSet.update(self.follow(src))
+
+            ruleIdentifier = (src, tuple(production))
+            if None in f and src != symbol and ruleIdentifier not in seenRules:
+                seenRules.add(ruleIdentifier)
+                followSet.update(self._follow(src, seenRules))
       
         return followSet
 
@@ -66,7 +72,13 @@ class Grammar:
     def iterProductions(self):
         for src, productions in self.rules.items():
             for production in productions:
-                yield src, production   
+                yield src, production
+
+    def getTerminals(self):
+        terminals = set()
+        for _, production in self.iterProductions():
+            terminals.update(filter(lambda x: isTokenClass(x), production))
+        return terminals
 
 class NonTerminalSymbol:
     def __init__(self, name):
