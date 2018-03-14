@@ -1,4 +1,5 @@
 import unittest
+from . token_stream import EOFToken
 from . grammar import Grammar, NonTerminalSymbol
 
 from lexer.tokens import (
@@ -21,7 +22,7 @@ class TestFirstAndFollow(unittest.TestCase):
         
         self.assertEqual(g.first(A), {PlusToken})
         self.assertEqual(g.first(B), {PlusToken})
-        self.assertEqual(g.follow(A), {"$"})
+        self.assertEqual(g.follow(A), {EOFToken})
         self.assertEqual(g.follow(B), {StarToken})
 
     def testGrammar2(self):
@@ -34,7 +35,7 @@ class TestFirstAndFollow(unittest.TestCase):
         g = Grammar(A, rules)
 
         self.assertEqual(g.first(A), {PlusToken, None})
-        self.assertEqual(g.follow(A), {"$"})
+        self.assertEqual(g.follow(A), {EOFToken})
 
     def testGrammar3(self):
         E = NonTerminalSymbol("E")
@@ -59,11 +60,11 @@ class TestFirstAndFollow(unittest.TestCase):
         self.assertEqual(g.first(T2), {StarToken, None})
         self.assertEqual(g.first(F), {RoundBracketOpenToken, IdentifierToken})
 
-        self.assertEqual(g.follow(E), {"$", RoundBracketCloseToken})
-        self.assertEqual(g.follow(E2), {"$", RoundBracketCloseToken})
-        self.assertEqual(g.follow(T), {PlusToken, "$", RoundBracketCloseToken})
-        self.assertEqual(g.follow(T2), {PlusToken, "$", RoundBracketCloseToken})
-        self.assertEqual(g.follow(F), {StarToken, PlusToken, "$", RoundBracketCloseToken})
+        self.assertEqual(g.follow(E), {EOFToken, RoundBracketCloseToken})
+        self.assertEqual(g.follow(E2), {EOFToken, RoundBracketCloseToken})
+        self.assertEqual(g.follow(T), {PlusToken, EOFToken, RoundBracketCloseToken})
+        self.assertEqual(g.follow(T2), {PlusToken, EOFToken, RoundBracketCloseToken})
+        self.assertEqual(g.follow(F), {StarToken, PlusToken, EOFToken, RoundBracketCloseToken})
 
     def testGrammar4(self):
         A = NonTerminalSymbol("A")
@@ -78,8 +79,8 @@ class TestFirstAndFollow(unittest.TestCase):
 
         self.assertEqual(g.first(A), {PlusToken})
         self.assertEqual(g.first(B), {None, PlusToken})
-        self.assertEqual(g.follow(A), {"$"})
-        self.assertEqual(g.follow(B), {"$"})
+        self.assertEqual(g.follow(A), {EOFToken})
+        self.assertEqual(g.follow(B), {EOFToken})
     
     def testGrammar5(self):
         A = NonTerminalSymbol("A")
@@ -97,9 +98,9 @@ class TestFirstAndFollow(unittest.TestCase):
         self.assertEqual(g.first(A), {PlusToken})
         self.assertEqual(g.first(B), {None})
         self.assertEqual(g.first(C), {PlusToken})
-        self.assertEqual(g.follow(A), {"$"})
+        self.assertEqual(g.follow(A), {EOFToken})
         self.assertEqual(g.follow(B), {PlusToken})
-        self.assertEqual(g.follow(C), {"$"})
+        self.assertEqual(g.follow(C), {EOFToken})
 
         self.assertEqual(g.first([B, C]), {PlusToken})
 
@@ -165,18 +166,18 @@ class TestParsingTableCreation(unittest.TestCase):
         self.assertEqual(table[(A, a)], [a, A])
         self.assertEqual(table[(A, b)], [])
         self.assertEqual(table[(A, c)], [])
-        self.assertEqual(table[(A, "$")], [])
+        self.assertEqual(table[(A, EOFToken)], [])
 
         self.assertEqual(table[(B, a)], [])
         self.assertEqual(table[(B, b)], [b, b, B])
         self.assertEqual(table[(B, c)], [])
-        self.assertEqual(table[(B, "$")], [])
+        self.assertEqual(table[(B, EOFToken)], [])
 
         self.assertEqual(table[(C, a)], [B, A])
         self.assertEqual(table[(C, b)], [B, A])
-        self.assertEqual(table[(C, "$")], [B, A])
+        self.assertEqual(table[(C, EOFToken)], [B, A])
 
         with self.assertRaises(KeyError):
-            table[(S, "$")]
+            table[(S, EOFToken)]
         with self.assertRaises(KeyError):
             table[(C, c)]

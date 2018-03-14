@@ -1,6 +1,12 @@
+from lexer.token import Token
+
+class EOFToken(Token):
+    def __repr__(self):
+        return "EOF"
+
 class TokenStream:
     def __init__(self, tokens):
-        self.tokens = tokens
+        self.tokens = tokens + [EOFToken("")]
         self.position = 0
 
     def take(self, n):

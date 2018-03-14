@@ -1,3 +1,4 @@
+from . token_stream import EOFToken
 from lexer.token import isTokenClass
 
 # http://www.jambe.co.nz/UNI/FirstAndFollowSets.html
@@ -43,7 +44,7 @@ class Grammar:
     def follow(self, symbol):
         '''
         Compute tokens that are allowed to come after the given symbol.
-        The resulting set can also contain "$" which means that the 
+        The resulting set can also contain EOFToken which means that the 
         input stream is allowed to end after the symbol.
         '''
         return self._follow(symbol, set())
@@ -52,7 +53,7 @@ class Grammar:
         followSet = set()
 
         if self.start == symbol:
-            followSet.add("$")
+            followSet.add(EOFToken)
 
         for src, production in self.iterProductionsWithElement(symbol):
             index = production.index(symbol)
