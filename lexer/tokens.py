@@ -34,6 +34,12 @@ class CurlyRoundBracketOpenToken(SingleCharToken):
 class CurlyRoundBracketCloseToken(SingleCharToken):
     char = "}"
 
+class PlusToken(SingleCharToken):
+    char = "+"
+
+class StarToken(SingleCharToken):
+    char = "*"
+
 class WhitespaceToken(Token):
     whitespaceChars = tuple(" \t\n\r")
 
