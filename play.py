@@ -34,22 +34,35 @@ instructions1 = [
 ]
 
 '''
-calling convention (on linux):
-arguments: rdi, rsi, rdx, rcx, r8, r9
-don't change: rbx, rbp, r12, r13, r14, r15
+calling conventions:
+    linux:
+        return: rax
+        arguments: rdi, rsi, rdx, rcx, r8, r9
+        don't change: rbx, rbp, r12, r13, r14, r15
+    windows:
+        return: rax
+        arguments: rcx, rdx, r8, r9
+        don't change: rbx, rbp, rdi, rsi, rsp, r12, r13, r14, r15
 '''
 
 instructions2 = [
     MovImmToRegInstr(rax, 0),
-    AddRegToRegInstr(rax, rdi),
-    AddRegToRegInstr(rax, rsi),
+    AddRegToRegInstr(rax, rcx),
     AddRegToRegInstr(rax, rdx),
+    AddRegToRegInstr(rax, r8),
+    RetInstr()
+]
+
+instructions3 = [
+    MovImmToRegInstr(rax, 50),
+    AddImmToRegInstr(rax, 50),
     RetInstr()
 ]
 
 block = Block(instructions2)
 print(block.toIntelSyntax())
 print(block.toMachineCode())
+print(block.toMachineCode().toCArrayInitializer())
 
 from ctypes import c_int, CFUNCTYPE
 functype = CFUNCTYPE(c_int, c_int, c_int, c_int)
