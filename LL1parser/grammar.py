@@ -61,7 +61,7 @@ class Grammar:
             followSet.update(f - {None})
 
             ruleIdentifier = (src, tuple(production))
-            if None in f and src != symbol and ruleIdentifier not in seenRules:
+            if None in f and ruleIdentifier not in seenRules:
                 seenRules.add(ruleIdentifier)
                 followSet.update(self._follow(src, seenRules))
       
