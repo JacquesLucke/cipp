@@ -1,12 +1,8 @@
 from lexer.token import Token
 
-class EOFToken(Token):
-    def __repr__(self):
-        return "EOF"
-
 class TokenStream:
     def __init__(self, tokens):
-        self.tokens = tokens + [EOFToken("")]
+        self.tokens = tokens
         self.position = 0
 
     def take(self, n):
@@ -14,11 +10,8 @@ class TokenStream:
         self.position += n
         return tokens
 
-    def takeOrFail(self, tokenType):
-        if isinstance(self.peekNext(), tokenType):
-            return self.take(1)[0]
-        else:
-            raise Exception(f"found unexpected token: {self.peekNext()}")
+    def takeNext(self):
+        return self.take(1)[0]
 
     def getLookahead(self, n):
         if len(self) < n:

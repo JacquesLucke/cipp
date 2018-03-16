@@ -48,9 +48,9 @@ class TestLexer(unittest.TestCase):
             <IdentifierToken:te4st>
             ''')
         self.assertEqual(len(tokens), 3)
-        self.assertEqual(tokens[0].content, "hello")
-        self.assertEqual(tokens[1].content, "world3")
-        self.assertEqual(tokens[2].content, "te4st")
+        self.assertEqual(tokens[0].value, "hello")
+        self.assertEqual(tokens[1].value, "world3")
+        self.assertEqual(tokens[2].value, "te4st")
 
     def testIntegerToken(self):
         tokens = self.assertLexerResult(" 32 42 54  ", integerLexer,
@@ -60,9 +60,9 @@ class TestLexer(unittest.TestCase):
             <IntegerToken:54>
             ''')
         self.assertEqual(len(tokens), 3)
-        self.assertEqual(tokens[0].number, 32)
-        self.assertEqual(tokens[1].number, 42)
-        self.assertEqual(tokens[2].number, 54)
+        self.assertEqual(tokens[0].value, 32)
+        self.assertEqual(tokens[1].value, 42)
+        self.assertEqual(tokens[2].value, 54)
 
     def testIntegerAndName(self):
         self.assertLexerResult(" hello 32 world 12 tes_t10 _32", integerIdentifierLexer,

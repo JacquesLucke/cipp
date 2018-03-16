@@ -1,50 +1,24 @@
-from . token import Token, CharState
+from lexer import Token, CharState
 
-class SingleCharToken(Token):
-    char = NotImplemented
+def createSingleCharToken(allowedChars):
+    class SingleCharToken(Token):
+        @classmethod
+        def startswith(cls, char):
+            return char in allowedChars
 
-    @classmethod
-    def startswith(cls, char):
-        return cls.char == char
+        def __init__(self, firstChar):
+            self.value = firstChar
 
-    def checkNext(self, char):
-        return CharState.NOT_CONSUMED
+        def checkNext(self, char):
+            return CharState.NOT_CONSUMED
 
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if len(cls.char) != 1:
-            raise Exception("expected class to have a single char")
+        def __repr__(self):
+            return f"<Token: {self.value}>"
 
+    return SingleCharToken
 
-class RoundBracketOpenToken(SingleCharToken):
-    char = "("
-
-class RoundBracketCloseToken(SingleCharToken):
-    char = ")"
-
-class CommaToken(SingleCharToken):
-    char = ","
-
-class EqualToken(SingleCharToken):
-    char = "="
-
-class CurlyRoundBracketOpenToken(SingleCharToken):
-    char = "{"
-
-class CurlyRoundBracketCloseToken(SingleCharToken):
-    char = "}"
-
-class PlusToken(SingleCharToken):
-    char = "+"
-
-class MinusToken(SingleCharToken):
-    char = "-"
-
-class StarToken(SingleCharToken):
-    char = "*"
-
-class SlashToken(SingleCharToken):
-    char = "/"
+singleChars = "(){}[],=+-*/@;<>"
+SingleCharToken = createSingleCharToken(singleChars)
 
 class WhitespaceToken(Token):
     whitespaceChars = tuple(" \t\n\r")
@@ -106,22 +80,23 @@ class IntegerToken(Token):
     def __repr__(self):
         return f"<{type(self).__name__}: {self.value}>"
 
+class CommentToken(Token):
+    @classmethod
+    def startswith(cls, char):
+        return char == "#"
 
+    def __init__(self, firstChar):
+        self.commentFinished = False
+        self.value = ""
 
-def createTokenTypeFromLetter(letter):
-    class ReprMeta(type):
-        def __repr__(cls):
-            return letter
-
-    class LetterToken(Token, metaclass = ReprMeta):
-        @classmethod
-        def startswith(cls, char):
-            return letter == char
-
-        def checkNext(self, char):
+    def checkNext(self, char):
+        if self.commentFinished:
             return CharState.NOT_CONSUMED
+        if char == "\n":
+            self.commentFinished = True
+        else:
+            self.value += char
+        return CharState.CONSUMED
 
-        def __repr__(self):
-            return letter
-
-    return LetterToken
+    def __repr__(self):
+        return f"<{type(self).__name__}: {self.value}>"
