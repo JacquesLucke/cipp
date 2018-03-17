@@ -424,7 +424,7 @@ class AddSubExprAST(ExpressionAST):
     def __repr__(self):
         string = ""
         for term in self.terms:
-            string += term.operation + term.expr
+            string += term.operation + str(term.expr)
         return string
 
 class MulDivExprAST(ExpressionAST):
@@ -434,7 +434,7 @@ class MulDivExprAST(ExpressionAST):
     def __repr__(self):
         string = ""
         for term in self.terms:
-            string += term.operation + term.expr
+            string += term.operation + str(term.expr)
         return string
 
 class VariableAST(ExpressionAST):
