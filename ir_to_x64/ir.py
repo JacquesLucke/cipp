@@ -12,6 +12,12 @@ class FunctionIR:
         reg = VirtualRegister()
         self.arguments.append(reg)
         return reg
+    
+    def getUsedVRegisters(self):
+        registers = set()
+        registers.update(self.arguments)
+        registers.update(self.entryBlock.iterVRegisters())
+        return registers
 
 class BlockIR:
     def __init__(self):
@@ -19,6 +25,10 @@ class BlockIR:
 
     def append(self, instruction):
         self.instructions.append(instruction)
+
+    def iterVRegisters(self):
+        for instr in self.instructions:
+            yield from instr.getVRegisters()
 
     def __repr__(self):
         return "\n".join(map(str, self.instructions))
@@ -33,6 +43,9 @@ class TwoOpInstrIR(InstructionIR):
         self.a = a
         self.b = b
 
+    def getVRegisters(self):
+        return [self.target, self.a, self.b]
+
     def __repr__(self):
         return f"{self.target} = {self.a} {self.operation} {self.b}"
 
@@ -40,6 +53,9 @@ class InitializeInstrIR(InstructionIR):
     def __init__(self, vreg, value):
         self.vreg = vreg
         self.value = value
+
+    def getVRegisters(self):
+        return [self.vreg]
 
     def __repr__(self):
         return f"{self.vreg} = {self.value}"
@@ -49,12 +65,18 @@ class MoveInstrIR(InstructionIR):
         self.target = target
         self.source = source
 
+    def getVRegisters(self):
+        return [self.target, self.source]
+
     def __repr__(self):
         return f"{self.target} = {self.source}"
 
 class ReturnInstrIR(InstructionIR):
     def __init__(self, vreg = None):
         self.vreg = vreg
+
+    def getVRegisters(self):
+        return [self.vreg]
 
     def __repr__(self):
         return f"return {self.vreg}"

@@ -20,7 +20,7 @@ def transformFunctionToIR(functionAST):
 
     entry = functionIR.entryBlock
     transformStatementToIR(functionAST.statement, entry, variables)
-    print(entry)
+
     return functionIR
 
 def transformStatementToIR(statementAST, block, variables):
