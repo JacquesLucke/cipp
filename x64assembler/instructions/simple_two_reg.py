@@ -2,7 +2,10 @@ from .. bits import Bits
 from . instruction import Instruction
 from . utils import getRegGroupPrefix_64, getRegGroupPrefix_32
 
-class AddRegToRegInstr(Instruction):
+class SimpleTwoRegInstr(Instruction):
+    opcodeHex = NotImplemented
+    intelSyntaxName = NotImplemented
+
     def __init__(self, dstReg, srcReg):
         assert dstReg.size == srcReg.size
         self.dstReg = dstReg
@@ -31,9 +34,17 @@ class AddRegToRegInstr(Instruction):
         return Bits.fromHex("66") + self.toMachineCode_32()
 
     def getBaseMachineCode(self):
-        opcode = Bits.fromHex("01")
+        opcode = Bits.fromHex(self.opcodeHex)
         arguments = Bits("11") + self.srcReg.bits + self.dstReg.bits
         return opcode + arguments
 
     def toIntelSyntax(self):
-        return f"add {self.dstReg.name}, {self.srcReg.name}"
+        return f"{self.intelSyntaxName} {self.dstReg.name}, {self.srcReg.name}"
+
+class AddRegToRegInstr(SimpleTwoRegInstr):
+    opcodeHex = "01"
+    intelSyntaxName = "add"
+
+class SubRegFromRegInstr(SimpleTwoRegInstr):
+    opcodeHex = "29"
+    intelSyntaxName = "sub"

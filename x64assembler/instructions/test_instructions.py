@@ -12,12 +12,15 @@ from . mov_imm_to_reg import MovImmToRegInstr
 from . mov_mem_to_reg import MovMemToRegInstr
 from . mov_reg_to_mem import MovRegToMemInstr
 from . add_imm_to_reg import AddImmToRegInstr
-from . add_reg_to_reg import AddRegToRegInstr
 from . push_imm import PushImmInstr
 from . push_reg import PushRegInstr
 from . syscall import SyscallInstr
 from . pop_reg import PopRegInstr
 from . ret import RetInstr
+
+from . simple_two_reg import (
+    AddRegToRegInstr, SubRegFromRegInstr
+)
 
 globals().update(allRegisters)
 
@@ -271,4 +274,26 @@ class TestAddRegToRegInstruction(TestInstruction):
         ([di, r14w], "664401f7", "add di, r14w"),
         ([r9w, bp], "664101e9", "add r9w, bp"),
         ([r11w, sp], "664101e3", "add r11w, sp")
+    ]
+
+class TestSubRegFromRegInstruction(TestInstruction):
+    instruction = SubRegFromRegInstr
+    simpleTestCases = [
+        # 64 bit
+        ([rax, rbx], "4829d8", "sub rax, rbx"),
+        ([r12, r14], "4d29f4", "sub r12, r14"),
+        ([rsp, r9], "4c29cc", "sub rsp, r9"),
+        ([r8, rdx], "4929d0", "sub r8, rdx"),
+
+        # 32 bit
+        ([eax, edx], "29d0", "sub eax, edx"),
+        ([r12d, r15d], "4529fc", "sub r12d, r15d"),
+        ([r10d, edi], "4129fa", "sub r10d, edi"),
+        ([ebp, r11d], "4429dd", "sub ebp, r11d"),
+        
+        # 16 bit
+        ([ax, cx], "6629c8", "sub ax, cx"),
+        ([r11w, r14w], "664529f3", "sub r11w, r14w"),
+        ([r12w, bp], "664129ec", "sub r12w, bp"),
+        ([sp, r8w], "664429c4", "sub sp, r8w")
     ]

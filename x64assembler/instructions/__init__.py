@@ -1,5 +1,4 @@
 from . add_imm_to_reg import AddImmToRegInstr
-from . add_reg_to_reg import AddRegToRegInstr
 from . mov_imm_to_reg import MovImmToRegInstr
 from . mov_reg_to_reg import MovRegToRegInstr
 from . mov_mem_to_reg import MovMemToRegInstr
@@ -9,3 +8,7 @@ from . push_imm import PushImmInstr
 from . syscall import SyscallInstr
 from . pop_reg import PopRegInstr
 from . ret import RetInstr
+
+from . simple_two_reg import (
+    AddRegToRegInstr, SubRegFromRegInstr
+)

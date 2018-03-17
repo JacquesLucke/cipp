@@ -1,6 +1,6 @@
 from x64assembler.instructions import (
     AddRegToRegInstr, MovImmToRegInstr, MovMemToRegInstr, MovRegToMemInstr,
-    RetInstr, AddImmToRegInstr
+    RetInstr, AddImmToRegInstr, SubRegFromRegInstr
 )
 
 from x64assembler.block import Block
@@ -38,11 +38,13 @@ def compileInstruction(instr, vregOffsets):
         yield loadVirtualRegister(rax, instr.source, vregOffsets)
         yield storeVirtualRegister(rax, instr.target, vregOffsets)
     elif isinstance(instr, TwoOpInstrIR):
+        yield loadVirtualRegister(rax, instr.a, vregOffsets)
+        yield loadVirtualRegister(rcx, instr.b, vregOffsets)
         if instr.operation == "+":
-            yield loadVirtualRegister(rax, instr.a, vregOffsets)
-            yield loadVirtualRegister(rcx, instr.b, vregOffsets)
             yield AddRegToRegInstr(rax, rcx)
-            yield storeVirtualRegister(rax, instr.target, vregOffsets)
+        elif instr.operation == "-":
+            yield SubRegFromRegInstr(rax, rcx)
+        yield storeVirtualRegister(rax, instr.target, vregOffsets)
     elif isinstance(instr, ReturnInstrIR):
         yield loadVirtualRegister(rax, instr.vreg, vregOffsets)
         yield from clearStackAndReturn(vregOffsets)

@@ -4,13 +4,13 @@ from ir_to_x64.ir_to_x64 import compileToX64
 from exec_utils import createFunctionFromHex
 from ctypes import CFUNCTYPE, c_int
 
-with open("example_code") as f:
-    code = f.read()
+# with open("example_code") as f:
+#     code = f.read()
 
 code = '''
     def int @myfunc(int x, int y) {
-        x = x + 10;
-        return x+(3+y);
+        x = x + 10 - 1;
+        return x+(3+y) - 10;
     }
 '''
 
@@ -21,3 +21,4 @@ hexCode = block.toMachineCode().toHex()
 
 f = createFunctionFromHex(CFUNCTYPE(c_int, c_int, c_int), hexCode)
 print(f(10, 22))
+
