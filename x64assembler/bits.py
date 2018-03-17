@@ -9,6 +9,10 @@ class Bits:
         assert all(c == "0" or c == "1" for c in string), string
 
     @classmethod
+    def zeros(cls, length):
+        return cls("0" * length)
+
+    @classmethod
     def fromInt(cls, number, length = None):
         if length is None:
             if number >= 0: return cls(bin(number)[2:])
@@ -53,6 +57,11 @@ class Bits:
         array = ", ".join("0x" + p for p in iterSequenceParts(self.toHex(), 2))
         return "{" + array + "}"
 
+    @property
+    def byteLength(self):
+        assert len(self) % 8 == 0
+        return len(self) // 8
+
     def __eq__(self, other):
         return self._bits == other
 
@@ -61,6 +70,9 @@ class Bits:
 
     def __len__(self):
         return len(self._bits)
+
+    def __getitem__(self, indexOrSlice):
+        return Bits(self._bits[indexOrSlice])
 
     def __repr__(self):
         text = self.toHex() if len(self) % 4 == 0 else self._bits

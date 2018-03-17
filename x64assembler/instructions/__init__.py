@@ -8,6 +8,7 @@ from . push_imm import PushImmInstr
 from . syscall import SyscallInstr
 from . pop_reg import PopRegInstr
 from . ret import RetInstr
+from . jmp import JmpInstr
 
 from . simple_two_reg import (
     AddRegToRegInstr, SubRegFromRegInstr
