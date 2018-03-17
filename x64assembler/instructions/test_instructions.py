@@ -224,7 +224,13 @@ class TestMovRegToMemInstruction(TestInstruction):
 
         ([rsp, rax], "48890424", "mov [rsp], rax"),
         ([rbp, rcx], "48894d00", "mov [rbp], rcx"),
-        ([r12, r8], "4d890424", "mov [r12], r8")
+        ([r12, r8], "4d890424", "mov [r12], r8"),
+
+        ([rsp, rax, 10], "488944240a", "mov [rsp+10], rax"),
+        ([rdx, rcx, 100], "48894a64", "mov [rdx+100], rcx"),
+        ([rdx, rcx, 1000], "48898ae8030000", "mov [rdx+1000], rcx"),
+        ([rsp, r15, -1000], "4c89bc2418fcffff", "mov [rsp-1000], r15"),
+        ([r14, r9, -16], "4d894ef0", "mov [r14-16], r9")
     ]
 
 class TestAddRegToRegInstruction(TestInstruction):
