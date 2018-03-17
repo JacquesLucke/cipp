@@ -3,7 +3,7 @@ from . token_stream import TokenStream
 from . tokens import IdentifierToken, IntegerToken, SingleCharToken
 
 def astFromString(string):
-    tokens = TokenStream(list(cippLexer.tokenize(string)))
+    tokens = TokenStream(cippLexer.tokenize(string))
     return parseProgram(tokens)
 
 def parseProgram(tokens):

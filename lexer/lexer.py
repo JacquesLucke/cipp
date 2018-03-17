@@ -1,14 +1,14 @@
 from . token import CharState
 
 class Lexer:
-    def __init__(self, allTokenTypes, ignoredTokenTypes = []):
-        self.allTokenTypes = allTokenTypes
-        self.ignoredTokenTypes = ignoredTokenTypes
+    def __init__(self, allowedTokens, ignoredTokens = []):
+        self.allTokenTypes = allowedTokens
+        self.ignoredTokenTypes = ignoredTokens
 
     def tokenize(self, charIterator):
         if isinstance(charIterator, str):
             charIterator = iter(charIterator)
-        return TokenIterator(self, charIterator)
+        return list(TokenIterator(self, charIterator))
 
     def findMatchingTokenType(self, char):
         for tokenType in self.allTokenTypes:

@@ -8,5 +8,5 @@ from . tokens import (
 cippLexer = Lexer(
     [IdentifierToken, IntegerToken, CommentToken, 
      SingleCharToken, WhitespaceToken], 
-    ignoredTokenTypes = [WhitespaceToken, CommentToken]
+    ignoredTokens = [WhitespaceToken, CommentToken]
 )
