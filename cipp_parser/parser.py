@@ -51,36 +51,40 @@ def parseType(tokens):
 
 def parseStatement(tokens):
     if nextIsLetter(tokens, "{"):
-        return parseBlockStatement(tokens)
+        return parseStatement_Block(tokens)
     elif nextIsKeyword(tokens, "return"):
-        return parseReturnStatement(tokens)
+        return parseStatement_Return(tokens)
     elif nextIsKeyword(tokens, "let"):
-        return parseLetStatement(tokens)
+        return parseStatement_Let(tokens)
     elif nextIsKeyword(tokens, "while"):
-        return parseWhileStatement(tokens)
+        return parseStatement_While(tokens)
     elif nextIsKeyword(tokens, "if"):
-        return parseIfStatement(tokens)
+        return parseStatement_If(tokens)
     elif nextIsIdentifier(tokens):
-        return parseAssignentStatement(tokens)
+        return parseStatement_Assignment(tokens)
     else:
         raise Exception("unknown statement type")
 
-def parseBlockStatement(tokens, a = 0):
+def parseStatement_Block(tokens, a = 0):
     statements = []
     acceptLetter(tokens, "{")
     while not nextIsLetter(tokens, "}"):
         statement = parseStatement(tokens)
         statements.append(statement)
     acceptLetter(tokens, "}")
-    return CippBlockStmtAST(statements)
 
-def parseReturnStatement(tokens):
+    if len(statements) == 1:
+        return statements[0]
+    else:
+        return CippBlockStmtAST(statements)
+
+def parseStatement_Return(tokens):
     acceptKeyword(tokens, "return")
     expression = parseExpression(tokens)
     acceptLetter(tokens, ";")
     return CippReturnStmtAST(expression)
 
-def parseLetStatement(tokens):
+def parseStatement_Let(tokens):
     acceptKeyword(tokens, "let")
     dataType = parseType(tokens)
     name = acceptIdentifier(tokens)
@@ -89,7 +93,7 @@ def parseLetStatement(tokens):
     acceptLetter(tokens, ";")
     return CippLetStmtAST(name, dataType, expression)
 
-def parseAssignentStatement(tokens):
+def parseStatement_Assignment(tokens):
     targetName = acceptIdentifier(tokens)
     if nextIsLetter(tokens, "["):
         acceptLetter(tokens, "[")
@@ -105,18 +109,18 @@ def parseAssignentStatement(tokens):
         acceptLetter(tokens, ";")
         return CippAssignmentStmtAST(targetName, expression)
 
-def parseWhileStatement(tokens):
+def parseStatement_While(tokens):
     acceptKeyword(tokens, "while")
     acceptLetter(tokens, "(")
-    condition = parseCondition(tokens)
+    condition = parseExpression(tokens)
     acceptLetter(tokens, ")")
     statement = parseStatement(tokens)
     return CippWhileStmtAST(condition, statement)
 
-def parseIfStatement(tokens):
+def parseStatement_If(tokens):
     acceptKeyword(tokens, "if")
     acceptLetter(tokens, "(")
-    condition = parseCondition(tokens)
+    condition = parseExpression(tokens)
     acceptLetter(tokens, ")")
     thenStatement = parseStatement(tokens)
     if nextIsKeyword(tokens, "else"):
@@ -126,14 +130,24 @@ def parseIfStatement(tokens):
     else:
         return CippIfStmtAST(condition, thenStatement)
 
-def parseCondition(tokens):
-    return parseComparison(tokens)
+def parseExpression(tokens):
+    '''
+    Expression parsing happens at different levels
+    because of operator precedence rules.
+    '''
+    return parseExpression_ComparisonLevel(tokens)
 
-def parseComparison(tokens):
-    left = parseExpression(tokens)
-    operator = parseComparisonOperator(tokens)
-    right = parseExpression(tokens)
-    return CippComparisonAST(operator, left, right)
+def parseExpression_ComparisonLevel(tokens):
+    expressionLeft = parseExpression_AddSubLevel(tokens)
+    if nextIsComparisonOperator(tokens):
+        operator = parseComparisonOperator(tokens)
+        expressionRight = parseExpression_AddSubLevel(tokens)
+        return CippComparisonAST(operator, expressionLeft, expressionRight)
+    else:
+        return expressionLeft
+
+def nextIsComparisonOperator(tokens):
+    return nextIsOneOfLetters(tokens, "<", ">", "=", "!")
 
 def parseComparisonOperator(tokens):
     if nextIsLetter(tokens, "="):
@@ -159,45 +173,51 @@ def parseComparisonOperator(tokens):
         acceptLetter(tokens, "=")
         return "!="
 
-def parseExpression(tokens):
+def parseExpression_AddSubLevel(tokens):
     addTerms = []
     subTerms = []
 
-    term = parseTerm(tokens)
+    term = parseExpression_MulDivLevel(tokens)
     addTerms.append(term)
 
     while nextIsOneOfLetters(tokens, "+", "-"):
         if nextIsLetter(tokens, "+"):
             acceptLetter(tokens, "+")
-            term = parseTerm(tokens)
+            term = parseExpression_MulDivLevel(tokens)
             addTerms.append(term)
         elif nextIsLetter(tokens, "-"):
             acceptLetter(tokens, "-")
-            term = parseTerm(tokens)
+            term = parseExpression_MulDivLevel(tokens)
             subTerms.append(term)
 
-    return CippAddSubExprAST(addTerms, subTerms)
+    if len(addTerms) == 1 and len(subTerms) == 0:
+        return addTerms[0]
+    else:
+        return CippAddSubExprAST(addTerms, subTerms)
 
-def parseTerm(tokens):
+def parseExpression_MulDivLevel(tokens):
     mulFactors = []
     divFactors = []
 
-    factor = parseFactor(tokens)
+    factor = parseExpression_FactorLevel(tokens)
     mulFactors.append(factor)
 
     while nextIsOneOfLetters(tokens, "*", "/"):
         if nextIsLetter(tokens, "*"):
             acceptLetter(tokens, "*")
-            factor = parseFactor(tokens)
+            factor = parseExpression_FactorLevel(tokens)
             mulFactors.append(factor)
         elif nextIsLetter(tokens, "/"):
             acceptLetter(tokens, "/")
-            factor = parseFactor(tokens)
+            factor = parseExpression_FactorLevel(tokens)
             divFactors.append(factor)
     
-    return CippMulDivExprAST(mulFactors, divFactors)
+    if len(mulFactors) == 1 and len(divFactors) == 0:
+        return mulFactors[0]
+    else:
+        return CippMulDivExprAST(mulFactors, divFactors)
 
-def parseFactor(tokens):
+def parseExpression_FactorLevel(tokens):
     if nextIsIdentifier(tokens):
         name = acceptIdentifier(tokens)
         return CippVariableAST(name)
@@ -323,9 +343,15 @@ class CippBlockStmtAST(CippStmtAST):
     def __init__(self, statements):
         self.statements = statements
 
+    def __repr__(self):
+        return "\n".join(map(str, self.statements))
+
 class CippReturnStmtAST(CippStmtAST):
     def __init__(self, expression):
         self.expression = expression
+
+    def __repr__(self):
+        return f"return {self.expression}"
 
 class CippLetStmtAST(CippStmtAST):
     def __init__(self, name, dataType, expression):
@@ -333,15 +359,24 @@ class CippLetStmtAST(CippStmtAST):
         self.dataType = dataType
         self.expression = expression
 
+    def __repr__(self):
+        return f"let {self.dataType} {self.name} = {self.expression}"
+
 class CippWhileStmtAST(CippStmtAST):
     def __init__(self, condition, statement):
         self.condition = condition
         self.statement = statement
 
+    def __repr__(self):
+        return f"while ({self.condition}) ..."
+
 class CippIfStmtAST(CippStmtAST):
     def __init__(self, condition, thenStatement):
         self.condition = condition
         self.thenStatement = thenStatement
+
+    def __repr__(self):
+        return f"if ({self.condition}) ..."
 
 class CippIfElseStmtAST(CippStmtAST):
     def __init__(self, condition, thenStatement, elseStatement):
@@ -349,10 +384,16 @@ class CippIfElseStmtAST(CippStmtAST):
         self.thenStatement = thenStatement
         self.elseStatement = elseStatement
 
+    def __repr__(self):
+        return f"if ({self.condition}) ...\nelse ..."
+
 class CippAssignmentStmtAST:
     def __init__(self, target, expression):
         self.target = target
         self.expression = expression
+
+    def __repr__(self):
+        return f"{self.target} = {self.expression}"
 
 class CippArrayAssignmentStmtAST:
     def __init__(self, target, offset, expression):
@@ -360,31 +401,69 @@ class CippArrayAssignmentStmtAST:
         self.offset = offset
         self.expression = expression
 
-class CippComparisonAST:
+    def __repr__(self):
+        return f"{self.target}[{self.offset}] = {self.expression}"
+
+class CippExpressionAST:
+    pass
+
+class CippComparisonAST(CippExpressionAST):
     def __init__(self, operator, left, right):
         self.operator = operator
         self.left = left 
         self.right = right
 
-class CippAddSubExprAST:
+    def __repr__(self):
+        return f"{self.left}{self.operator}{self.right}"
+
+class CippAddSubExprAST(CippExpressionAST):
     def __init__(self, addTerms, subTerms):
         self.addTerms = addTerms
         self.subTerms = subTerms
 
-class CippMulDivExprAST:
+    def __repr__(self):
+        addPart = "+".join(self.addTerms)
+        subPart = "-".join(self.subTerms)
+        if len(addPart) == 0:
+            return f"-{subPart}"
+        elif len(subPart) == 0:
+            return addPart
+        else:
+            return f"{addPart}-{subPart}"
+
+class CippMulDivExprAST(CippExpressionAST):
     def __init__(self, mulFactors, divFactors):
         self.mulFactors = mulFactors
         self.divFactors = divFactors
 
-class CippVariableAST:
+    def __repr__(self):
+        mulPart = "*".join(self.mulFactors)
+        divPart = "/".join(self.divFactors)
+        if len(mulPart) == 0:
+            return f"1/{divPart}"
+        elif len(divPart) == 0:
+            return mulPart
+        else:
+            return f"{mulPart} / {divPart}"
+
+class CippVariableAST(CippExpressionAST):
     def __init__(self, name):
         self.name = name
 
-class CippConstIntAST:
+    def __repr__(self):
+        return self.name
+
+class CippConstIntAST(CippExpressionAST):
     def __init__(self, value):
         self.value = value
 
-class CippFunctionCallAST:
+    def __repr__(self):
+        return str(self.value)
+
+class CippFunctionCallAST(CippExpressionAST):
     def __init__(self, name, arguments):
         self.name = name
         self.arguments = arguments
+
+    def __repr__(self):
+        return f"@{self.name}({', '.join(self.arguments)})"
