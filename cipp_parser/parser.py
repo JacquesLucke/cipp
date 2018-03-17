@@ -174,48 +174,46 @@ def parseComparisonOperator(tokens):
         return "!="
 
 def parseExpression_AddSubLevel(tokens):
-    addTerms = []
-    subTerms = []
+    terms = []
 
     term = parseExpression_MulDivLevel(tokens)
-    addTerms.append(term)
+    terms.append(AddedTerm(term))
 
     while nextIsOneOfLetters(tokens, "+", "-"):
         if nextIsLetter(tokens, "+"):
             acceptLetter(tokens, "+")
             term = parseExpression_MulDivLevel(tokens)
-            addTerms.append(term)
+            terms.append(AddedTerm(term))
         elif nextIsLetter(tokens, "-"):
             acceptLetter(tokens, "-")
             term = parseExpression_MulDivLevel(tokens)
-            subTerms.append(term)
+            terms.append(SubtractedTerm(term))
 
-    if len(addTerms) == 1 and len(subTerms) == 0:
-        return addTerms[0]
+    if len(terms) == 1 and isinstance(terms[0], AddedTerm):
+        return terms[0].expr
     else:
-        return AddSubExprAST(addTerms, subTerms)
+        return AddSubExprAST(terms)
 
 def parseExpression_MulDivLevel(tokens):
-    mulFactors = []
-    divFactors = []
+    terms = []
 
     factor = parseExpression_FactorLevel(tokens)
-    mulFactors.append(factor)
+    terms.append(MultipliedTerm(factor))
 
     while nextIsOneOfLetters(tokens, "*", "/"):
         if nextIsLetter(tokens, "*"):
             acceptLetter(tokens, "*")
             factor = parseExpression_FactorLevel(tokens)
-            mulFactors.append(factor)
+            terms.append(MultipliedTerm(factor))
         elif nextIsLetter(tokens, "/"):
             acceptLetter(tokens, "/")
             factor = parseExpression_FactorLevel(tokens)
-            divFactors.append(factor)
+            terms.append(DividedTerm(factor))
     
-    if len(mulFactors) == 1 and len(divFactors) == 0:
-        return mulFactors[0]
+    if len(terms) == 1 and isinstance(terms[0], MultipliedTerm):
+        return terms[0].expr
     else:
-        return MulDivExprAST(mulFactors, divFactors)
+        return MulDivExprAST(terms)
 
 def parseExpression_FactorLevel(tokens):
     if nextIsIdentifier(tokens):
@@ -420,34 +418,24 @@ class ComparisonAST(ExpressionAST):
         return f"{self.left}{self.operator}{self.right}"
 
 class AddSubExprAST(ExpressionAST):
-    def __init__(self, addTerms, subTerms):
-        self.addTerms = addTerms
-        self.subTerms = subTerms
+    def __init__(self, termsWithType):
+        self.terms = termsWithType
 
     def __repr__(self):
-        addPart = "+".join(self.addTerms)
-        subPart = "-".join(self.subTerms)
-        if len(addPart) == 0:
-            return f"-{subPart}"
-        elif len(subPart) == 0:
-            return addPart
-        else:
-            return f"{addPart}-{subPart}"
+        string = ""
+        for term in self.terms:
+            string += term.operation + term.expr
+        return string
 
 class MulDivExprAST(ExpressionAST):
-    def __init__(self, mulFactors, divFactors):
-        self.mulFactors = mulFactors
-        self.divFactors = divFactors
+    def __init__(self, termsWithType):
+        self.terms = termsWithType
 
     def __repr__(self):
-        mulPart = "*".join(self.mulFactors)
-        divPart = "/".join(self.divFactors)
-        if len(mulPart) == 0:
-            return f"1/{divPart}"
-        elif len(divPart) == 0:
-            return mulPart
-        else:
-            return f"{mulPart} / {divPart}"
+        string = ""
+        for term in self.terms:
+            string += term.operation + term.expr
+        return string
 
 class VariableAST(ExpressionAST):
     def __init__(self, name):
@@ -470,3 +458,21 @@ class FunctionCallAST(ExpressionAST):
 
     def __repr__(self):
         return f"@{self.functionName}({', '.join(self.arguments)})"
+
+
+class AddedTerm:
+    operation = "+"
+    def __init__(self, expression):
+        self.expr = expression
+class SubtractedTerm:
+    operation = "-"
+    def __init__(self, expression):
+        self.expr = expression
+class MultipliedTerm:
+    operation = "*"
+    def __init__(self, expression):
+        self.expr = expression
+class DividedTerm:
+    operation = "/"
+    def __init__(self, expression):
+        self.expr = expression
