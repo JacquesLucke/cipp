@@ -48,3 +48,7 @@ class AddRegToRegInstr(SimpleTwoRegInstr):
 class SubRegFromRegInstr(SimpleTwoRegInstr):
     opcodeHex = "29"
     intelSyntaxName = "sub"
+
+class CompareInstr(SimpleTwoRegInstr):
+    opcodeHex = "39"
+    intelSyntaxName = "cmp"

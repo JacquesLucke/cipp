@@ -1,5 +1,4 @@
 from .. bits import Bits
-from . utils import isTwosComplement
 from . instruction import Instruction
 
 class JmpInstr(Instruction):
@@ -14,6 +13,19 @@ class JmpInstr(Instruction):
 
     def getLinks(self):
         return [JumpRelative32(self.label, startByte = 1)]
+
+class JmpNotZeroInstr(Instruction):
+    def __init__(self, label):
+        self.label = label
+
+    def toMachineCode(self):
+        return Bits.fromHex("0f85") + Bits.zeros(32)
+
+    def toIntelSyntax(self):
+        return f"jnz {self.label}"
+
+    def getLinks(self):
+        return [JumpRelative32(self.label, startByte = 2)]
 
 class JumpRelative32:
     def __init__(self, label, startByte):
