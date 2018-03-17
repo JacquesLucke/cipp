@@ -1,11 +1,9 @@
 from .. bits import Bits
 from . instruction import Instruction
-from . utils import getRegGroupPrefix_64
+from . utils import getRegGroupPrefix_64, isTwosComplement
 
 class MovMemToRegInstr(Instruction):
     def __init__(self, dstReg, addrReg, offset = 0):
-        if offset != 0:
-            raise NotImplementedError()
         self.dstReg = dstReg
         self.addrReg = addrReg
         self.offset = offset
@@ -17,21 +15,33 @@ class MovMemToRegInstr(Instruction):
             raise NotImplementedError()
 
     def toMachineCode_64(self):
+        # The registers with number 4 (rsp, r12) and 5 (rbp, r13) have special cases.
+        
         prefix = getRegGroupPrefix_64(self.addrReg, self.dstReg)
         opcode = Bits.fromHex("8b")
-        if self.addrReg.number == 5: # special case for rbp and r13
-            arguments = Bits("01") + self.dstReg.bits + self.addrReg.bits
-            arguments += Bits.fromInt(0, length = 8)
-        else:
-            arguments = Bits("00") + self.dstReg.bits + self.addrReg.bits
 
+        if self.offset == 0 and self.addrReg.number != 5:
+            modBits = Bits("00")
+            imm = Bits("")
+        elif isTwosComplement(self.offset, 8):
+            modBits = Bits("01")
+            imm = Bits.fromInt(self.offset, length = 8)
+        elif isTwosComplement(self.offset, 32):
+            modBits = Bits("10")
+            imm = Bits.fromInt(self.offset, length = 32).reversedBytes()
+        else:
+            raise NotImplementedError()
+
+        arguments = modBits + self.dstReg.bits + self.addrReg.bits
         if self.addrReg.number == 4:
             arguments += Bits.fromHex("24")
 
-        return Bits.join(prefix, opcode, arguments)
+        return Bits.join(prefix, opcode, arguments, imm)
 
     def toIntelSyntax(self):
         if self.offset == 0:
             return f"mov {self.dstReg.name}, [{self.addrReg.name}]"
+        elif self.offset < 0:
+            return f"mov {self.dstReg.name}, [{self.addrReg.name}{self.offset}]"
         else:
-            return f"mov {self.dstReg.name}, [{self.addrReg.name} + {self.offset}]"
+            return f"mov {self.dstReg.name}, [{self.addrReg.name}+{self.offset}]"

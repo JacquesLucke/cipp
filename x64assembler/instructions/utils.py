@@ -14,6 +14,9 @@ def getImmSize(n):
     else:
         raise NotImplementedError("unsupported immediate value size")
 
+def isTwosComplement(n, bits):
+    return -2**(bits - 1) <= n < 2**(bits - 1)
+
 
 def getRegGroupPrefix_64(reg1, reg2):
     return prefixesFor64BitRegs[(reg1.group, reg2.group)]

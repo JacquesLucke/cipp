@@ -1,6 +1,6 @@
 from .. bits import Bits
 from . instruction import Instruction
-from . utils import getRegGroupPrefix_64
+from . utils import getRegGroupPrefix_64, isTwosComplement
 
 class MovRegToMemInstr(Instruction):
     def __init__(self, addrReg, srcReg, offset = 0):
@@ -45,6 +45,3 @@ class MovRegToMemInstr(Instruction):
             return f"mov [{self.addrReg.name}{self.offset}], {self.srcReg.name}"
         else:
             return f"mov [{self.addrReg.name}+{self.offset}], {self.srcReg.name}"
-            
-def isTwosComplement(n, bits):
-    return -2**(bits - 1) <= n < 2**(bits - 1)
