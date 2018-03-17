@@ -1,9 +1,9 @@
-from . lexing import clippLexer
+from . lexing import cippLexer
 from . token_stream import TokenStream
 from . tokens import IdentifierToken, IntegerToken, SingleCharToken
 
 def astFromString(string):
-    tokens = TokenStream(list(clippLexer.tokenize(string)))
+    tokens = TokenStream(list(cippLexer.tokenize(string)))
     return parseProgram(tokens)
 
 def parseProgram(tokens):
@@ -11,7 +11,7 @@ def parseProgram(tokens):
     while nextIsKeyword(tokens, "def"):
         function = parseFunction(tokens)
         functions.append(function)
-    return ClippProgramAST(functions)
+    return CippProgramAST(functions)
 
 def parseFunction(tokens):
     acceptKeyword(tokens, "def")
@@ -20,7 +20,7 @@ def parseFunction(tokens):
     name = acceptIdentifier(tokens)
     arguments = parseArguments(tokens)
     statement = parseStatement(tokens)
-    return ClippFunctionAST(name, retType, arguments, statement)
+    return CippFunctionAST(name, retType, arguments, statement)
 
 def parseArguments(tokens):
     acceptLetter(tokens, "(")
@@ -43,11 +43,11 @@ def parseArguments(tokens):
 def parseArgument(tokens):
     dataType = parseType(tokens)
     name = acceptIdentifier(tokens)
-    return ClippArgumentAST(name, dataType)
+    return CippArgumentAST(name, dataType)
 
 def parseType(tokens):
     dataType = acceptIdentifier(tokens)
-    return ClippTypeAST(dataType)
+    return CippTypeAST(dataType)
 
 def parseStatement(tokens):
     if nextIsLetter(tokens, "{"):
@@ -72,13 +72,13 @@ def parseBlockStatement(tokens, a = 0):
         statement = parseStatement(tokens)
         statements.append(statement)
     acceptLetter(tokens, "}")
-    return ClippBlockStmtAST(statements)
+    return CippBlockStmtAST(statements)
 
 def parseReturnStatement(tokens):
     acceptKeyword(tokens, "return")
     expression = parseExpression(tokens)
     acceptLetter(tokens, ";")
-    return ClippReturnStmtAST(expression)
+    return CippReturnStmtAST(expression)
 
 def parseLetStatement(tokens):
     acceptKeyword(tokens, "let")
@@ -87,7 +87,7 @@ def parseLetStatement(tokens):
     acceptLetter(tokens, "=")
     expression = parseExpression(tokens)
     acceptLetter(tokens, ";")
-    return ClippLetStmtAST(name, dataType, expression)
+    return CippLetStmtAST(name, dataType, expression)
 
 def parseAssignentStatement(tokens):
     targetName = acceptIdentifier(tokens)
@@ -98,12 +98,12 @@ def parseAssignentStatement(tokens):
         acceptLetter(tokens, "=")
         expression = parseExpression(tokens)
         acceptLetter(tokens, ";")
-        return ClippArrayAssignmentStmtAST(targetName, offset, expression)
+        return CippArrayAssignmentStmtAST(targetName, offset, expression)
     else:
         acceptLetter(tokens, "=")
         expression = parseExpression(tokens)
         acceptLetter(tokens, ";")
-        return ClippAssignmentStmtAST(targetName, expression)
+        return CippAssignmentStmtAST(targetName, expression)
 
 def parseWhileStatement(tokens):
     acceptKeyword(tokens, "while")
@@ -111,7 +111,7 @@ def parseWhileStatement(tokens):
     condition = parseCondition(tokens)
     acceptLetter(tokens, ")")
     statement = parseStatement(tokens)
-    return ClippWhileStmtAST(condition, statement)
+    return CippWhileStmtAST(condition, statement)
 
 def parseIfStatement(tokens):
     acceptKeyword(tokens, "if")
@@ -122,9 +122,9 @@ def parseIfStatement(tokens):
     if nextIsKeyword(tokens, "else"):
         acceptKeyword(tokens, "else")
         elseStatement = parseStatement(tokens)
-        return ClippIfElseStmtAST(condition, thenStatement, elseStatement)
+        return CippIfElseStmtAST(condition, thenStatement, elseStatement)
     else:
-        return ClippIfStmtAST(condition, thenStatement)
+        return CippIfStmtAST(condition, thenStatement)
 
 def parseCondition(tokens):
     return parseComparison(tokens)
@@ -133,7 +133,7 @@ def parseComparison(tokens):
     left = parseExpression(tokens)
     operator = parseComparisonOperator(tokens)
     right = parseExpression(tokens)
-    return ClippComparisonAST(operator, left, right)
+    return CippComparisonAST(operator, left, right)
 
 def parseComparisonOperator(tokens):
     if nextIsLetter(tokens, "="):
@@ -176,7 +176,7 @@ def parseExpression(tokens):
             term = parseTerm(tokens)
             subTerms.append(term)
 
-    return ClippAddSubExprAST(addTerms, subTerms)
+    return CippAddSubExprAST(addTerms, subTerms)
 
 def parseTerm(tokens):
     mulFactors = []
@@ -195,15 +195,15 @@ def parseTerm(tokens):
             factor = parseFactor(tokens)
             divFactors.append(factor)
     
-    return ClippMulDivExprAST(mulFactors, divFactors)
+    return CippMulDivExprAST(mulFactors, divFactors)
 
 def parseFactor(tokens):
     if nextIsIdentifier(tokens):
         name = acceptIdentifier(tokens)
-        return ClippVariableAST(name)
+        return CippVariableAST(name)
     elif nextIsInteger(tokens):
         value = acceptInteger(tokens)
-        return ClippConstIntAST(value)
+        return CippConstIntAST(value)
     elif nextIsLetter(tokens, "("):
         acceptLetter(tokens, "(")
         expression = parseExpression(tokens)
@@ -216,7 +216,7 @@ def parseFunctionCall(tokens):
     acceptLetter(tokens, "@")
     name = acceptIdentifier(tokens)
     arguments = parseCallArguments(tokens)
-    return ClippFunctionCallAST(name, arguments)
+    return CippFunctionCallAST(name, arguments)
 
 def parseCallArguments(tokens):
     acceptLetter(tokens, "(")
@@ -287,11 +287,11 @@ def acceptInteger(tokens):
         raise Exception("expected integer")
 
 
-class ClippProgramAST:
+class CippProgramAST:
     def __init__(self, functions):
         self.functions = functions
 
-class ClippFunctionAST:
+class CippFunctionAST:
     def __init__(self, name, retType, arguments, statement):
         self.name = name
         self.retType = retType
@@ -301,14 +301,14 @@ class ClippFunctionAST:
     def __repr__(self):
         return f"<{self.retType} {self.name}({self.arguments})>"
 
-class ClippTypeAST:
+class CippTypeAST:
     def __init__(self, name):
         self.name = name
 
     def __repr__(self):
         return self.name
 
-class ClippArgumentAST:
+class CippArgumentAST:
     def __init__(self, name, dataType):
         self.name = name
         self.dataType = dataType
@@ -316,75 +316,75 @@ class ClippArgumentAST:
     def __repr__(self):
         return f"{self.dataType} {self.name}"
 
-class ClippStmtAST:
+class CippStmtAST:
     pass
 
-class ClippBlockStmtAST(ClippStmtAST):
+class CippBlockStmtAST(CippStmtAST):
     def __init__(self, statements):
         self.statements = statements
 
-class ClippReturnStmtAST(ClippStmtAST):
+class CippReturnStmtAST(CippStmtAST):
     def __init__(self, expression):
         self.expression = expression
 
-class ClippLetStmtAST(ClippStmtAST):
+class CippLetStmtAST(CippStmtAST):
     def __init__(self, name, dataType, expression):
         self.name = name
         self.dataType = dataType
         self.expression = expression
 
-class ClippWhileStmtAST(ClippStmtAST):
+class CippWhileStmtAST(CippStmtAST):
     def __init__(self, condition, statement):
         self.condition = condition
         self.statement = statement
 
-class ClippIfStmtAST(ClippStmtAST):
+class CippIfStmtAST(CippStmtAST):
     def __init__(self, condition, thenStatement):
         self.condition = condition
         self.thenStatement = thenStatement
 
-class ClippIfElseStmtAST(ClippStmtAST):
+class CippIfElseStmtAST(CippStmtAST):
     def __init__(self, condition, thenStatement, elseStatement):
         self.condition = condition
         self.thenStatement = thenStatement
         self.elseStatement = elseStatement
 
-class ClippAssignmentStmtAST:
+class CippAssignmentStmtAST:
     def __init__(self, target, expression):
         self.target = target
         self.expression = expression
 
-class ClippArrayAssignmentStmtAST:
+class CippArrayAssignmentStmtAST:
     def __init__(self, target, offset, expression):
         self.target = target
         self.offset = offset
         self.expression = expression
 
-class ClippComparisonAST:
+class CippComparisonAST:
     def __init__(self, operator, left, right):
         self.operator = operator
         self.left = left 
         self.right = right
 
-class ClippAddSubExprAST:
+class CippAddSubExprAST:
     def __init__(self, addTerms, subTerms):
         self.addTerms = addTerms
         self.subTerms = subTerms
 
-class ClippMulDivExprAST:
+class CippMulDivExprAST:
     def __init__(self, mulFactors, divFactors):
         self.mulFactors = mulFactors
         self.divFactors = divFactors
 
-class ClippVariableAST:
+class CippVariableAST:
     def __init__(self, name):
         self.name = name
 
-class ClippConstIntAST:
+class CippConstIntAST:
     def __init__(self, value):
         self.value = value
 
-class ClippFunctionCallAST:
+class CippFunctionCallAST:
     def __init__(self, name, arguments):
         self.name = name
         self.arguments = arguments

@@ -1,4 +1,4 @@
-from clipp.parser import astFromString
+from cipp_parser import astFromString
 
 with open("example_code") as f:
     code = f.read()

@@ -5,7 +5,7 @@ from . tokens import (
     WhitespaceToken, SingleCharToken
 )
 
-clippLexer = Lexer(
+cippLexer = Lexer(
     [IdentifierToken, IntegerToken, CommentToken, 
      SingleCharToken, WhitespaceToken], 
     ignoredTokenTypes = [WhitespaceToken, CommentToken]
