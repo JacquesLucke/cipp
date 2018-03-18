@@ -1,5 +1,5 @@
 import sys
-from cipp.parser import astFromString
+from cipp.parser import parse
 from cipp.ast_to_ir import transformProgramToIR
 from cipp.ir_to_x64 import compileToX64
 from exec_utils import createFunctionFromHex
@@ -18,7 +18,7 @@ code = '''
     }
 '''
 
-ast = astFromString(code)
+ast = parse(code)
 module = transformProgramToIR(ast)
 # print(module.functions[0].block)
 

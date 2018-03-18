@@ -15,7 +15,7 @@ cippLexer = Lexer(
     ignoredTokens = [WhitespaceToken, CommentToken]
 )
 
-def astFromString(string):
+def parse(string):
     tokens = stringToTokenStream(string)
     return parseProgram(tokens)
 
@@ -267,6 +267,35 @@ def parseCallArguments(tokens):
         return arguments
 
 
+
+# Utility Functions
+####################################################
+
+def acceptKeyword(tokens, keyword):
+    if nextIsKeyword(tokens, keyword):
+        tokens.takeNext()
+    else:
+        raise Exception(f"expected keyword '{keyword}'")
+
+def acceptLetter(tokens, letter):
+    if nextIsLetter(tokens, letter):
+        tokens.takeNext()
+    else:
+        raise Exception(f"expected token '{letter}'")
+
+def acceptIdentifier(tokens):
+    if nextIsIdentifier(tokens):
+        return tokens.takeNext().value
+    else:
+        raise Exception("expected identifier")
+
+def acceptInteger(tokens):
+    if nextIsInteger(tokens):
+        return tokens.takeNext().value
+    else:
+        raise Exception("expected integer")
+
+
 def nextIsKeyword(tokens, keyword):
     if len(tokens) == 0: return False
     nextToken = tokens.peekNext()
@@ -294,28 +323,3 @@ def nextIsInteger(tokens):
 
 def nextIsComparisonOperator(tokens):
     return nextIsOneOfLetters(tokens, "<", ">", "=", "!")
-
-
-def acceptKeyword(tokens, keyword):
-    if nextIsKeyword(tokens, keyword):
-        tokens.takeNext()
-    else:
-        raise Exception(f"expected keyword '{keyword}'")
-
-def acceptLetter(tokens, letter):
-    if nextIsLetter(tokens, letter):
-        tokens.takeNext()
-    else:
-        raise Exception(f"expected token '{letter}'")
-
-def acceptIdentifier(tokens):
-    if nextIsIdentifier(tokens):
-        return tokens.takeNext().value
-    else:
-        raise Exception("expected identifier")
-
-def acceptInteger(tokens):
-    if nextIsInteger(tokens):
-        return tokens.takeNext().value
-    else:
-        raise Exception("expected integer")
