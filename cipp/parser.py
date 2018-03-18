@@ -27,7 +27,7 @@ def parseProgram(tokens):
     while nextIsKeyword(tokens, "def"):
         function = parseFunction(tokens)
         functions.append(function)
-    return ast.ProgramAST(functions)
+    return ast.Program(functions)
 
 def parseFunction(tokens):
     acceptKeyword(tokens, "def")
@@ -36,7 +36,7 @@ def parseFunction(tokens):
     name = acceptIdentifier(tokens)
     arguments = parseArguments(tokens)
     statement = parseStatement(tokens)
-    return ast.FunctionAST(name, retType, arguments, statement)
+    return ast.Function(name, retType, arguments, statement)
 
 def parseArguments(tokens):
     acceptLetter(tokens, "(")
@@ -59,11 +59,11 @@ def parseArguments(tokens):
 def parseArgument(tokens):
     dataType = parseType(tokens)
     name = acceptIdentifier(tokens)
-    return ast.ArgumentAST(name, dataType)
+    return ast.Argument(name, dataType)
 
 def parseType(tokens):
     dataType = acceptIdentifier(tokens)
-    return ast.TypeAST(dataType)
+    return ast.Type(dataType)
 
 def parseStatement(tokens):
     if nextIsLetter(tokens, "{"):
@@ -92,13 +92,13 @@ def parseStatement_Block(tokens, a = 0):
     if len(statements) == 1:
         return statements[0]
     else:
-        return ast.BlockStmtAST(statements)
+        return ast.BlockStmt(statements)
 
 def parseStatement_Return(tokens):
     acceptKeyword(tokens, "return")
     expression = parseExpression(tokens)
     acceptLetter(tokens, ";")
-    return ast.ReturnStmtAST(expression)
+    return ast.ReturnStmt(expression)
 
 def parseStatement_Let(tokens):
     acceptKeyword(tokens, "let")
@@ -107,7 +107,7 @@ def parseStatement_Let(tokens):
     acceptLetter(tokens, "=")
     expression = parseExpression(tokens)
     acceptLetter(tokens, ";")
-    return ast.LetStmtAST(name, dataType, expression)
+    return ast.LetStmt(name, dataType, expression)
 
 def parseStatement_Assignment(tokens):
     targetName = acceptIdentifier(tokens)
@@ -118,12 +118,12 @@ def parseStatement_Assignment(tokens):
         acceptLetter(tokens, "=")
         expression = parseExpression(tokens)
         acceptLetter(tokens, ";")
-        return ast.ArrayAssignmentStmtAST(targetName, offset, expression)
+        return ast.ArrayAssignmentStmt(targetName, offset, expression)
     else:
         acceptLetter(tokens, "=")
         expression = parseExpression(tokens)
         acceptLetter(tokens, ";")
-        return ast.AssignmentStmtAST(targetName, expression)
+        return ast.AssignmentStmt(targetName, expression)
 
 def parseStatement_While(tokens):
     acceptKeyword(tokens, "while")
@@ -131,7 +131,7 @@ def parseStatement_While(tokens):
     condition = parseExpression(tokens)
     acceptLetter(tokens, ")")
     statement = parseStatement(tokens)
-    return ast.WhileStmtAST(condition, statement)
+    return ast.WhileStmt(condition, statement)
 
 def parseStatement_If(tokens):
     acceptKeyword(tokens, "if")
@@ -142,9 +142,9 @@ def parseStatement_If(tokens):
     if nextIsKeyword(tokens, "else"):
         acceptKeyword(tokens, "else")
         elseStatement = parseStatement(tokens)
-        return ast.IfElseStmtAST(condition, thenStatement, elseStatement)
+        return ast.IfElseStmt(condition, thenStatement, elseStatement)
     else:
-        return ast.IfStmtAST(condition, thenStatement)
+        return ast.IfStmt(condition, thenStatement)
 
 def parseExpression(tokens):
     '''
@@ -158,7 +158,7 @@ def parseExpression_ComparisonLevel(tokens):
     if nextIsComparisonOperator(tokens):
         operator = parseComparisonOperator(tokens)
         expressionRight = parseExpression_AddSubLevel(tokens)
-        return ast.ComparisonExprAST(operator, expressionLeft, expressionRight)
+        return ast.ComparisonExpr(operator, expressionLeft, expressionRight)
     else:
         return expressionLeft
 
@@ -205,7 +205,7 @@ def parseExpression_AddSubLevel(tokens):
     if len(terms) == 1 and isinstance(terms[0], ast.AddedTerm):
         return terms[0].expr
     else:
-        return ast.AddSubExprAST(terms)
+        return ast.AddSubExpr(terms)
 
 def parseExpression_MulDivLevel(tokens):
     terms = []
@@ -226,15 +226,15 @@ def parseExpression_MulDivLevel(tokens):
     if len(terms) == 1 and isinstance(terms[0], ast.MultipliedTerm):
         return terms[0].expr
     else:
-        return ast.MulDivExprAST(terms)
+        return ast.MulDivExpr(terms)
 
 def parseExpression_FactorLevel(tokens):
     if nextIsIdentifier(tokens):
         name = acceptIdentifier(tokens)
-        return ast.VariableAST(name)
+        return ast.Variable(name)
     elif nextIsInteger(tokens):
         value = acceptInteger(tokens)
-        return ast.ConstIntAST(value)
+        return ast.ConstInt(value)
     elif nextIsLetter(tokens, "("):
         acceptLetter(tokens, "(")
         expression = parseExpression(tokens)
@@ -247,7 +247,7 @@ def parseFunctionCall(tokens):
     acceptLetter(tokens, "@")
     name = acceptIdentifier(tokens)
     arguments = parseCallArguments(tokens)
-    return ast.FunctionCallAST(name, arguments)
+    return ast.FunctionCall(name, arguments)
 
 def parseCallArguments(tokens):
     acceptLetter(tokens, "(")

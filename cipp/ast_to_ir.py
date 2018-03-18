@@ -17,17 +17,17 @@ def transformFunctionToIR(functionAST):
     return functionIR
 
 def insertInstr_Statement(block, statementAST, variables):
-    if isinstance(statementAST, ast.BlockStmtAST):
+    if isinstance(statementAST, ast.BlockStmt):
         insertInstr_Statement_Block(block, statementAST, variables)
-    elif isinstance(statementAST, ast.AssignmentStmtAST):
+    elif isinstance(statementAST, ast.AssignmentStmt):
         insertInstr_Statement_Assignment(block, statementAST, variables)
-    elif isinstance(statementAST, ast.ReturnStmtAST):
+    elif isinstance(statementAST, ast.ReturnStmt):
         insertInstr_Statement_Return(block, statementAST, variables)
-    elif isinstance(statementAST, ast.WhileStmtAST):
+    elif isinstance(statementAST, ast.WhileStmt):
         insertInstr_Statement_While(block, statementAST, variables)
-    elif isinstance(statementAST, ast.IfStmtAST):
+    elif isinstance(statementAST, ast.IfStmt):
         insertInstr_Statement_If(block, statementAST, variables)
-    elif isinstance(statementAST, ast.IfElseStmtAST):
+    elif isinstance(statementAST, ast.IfElseStmt):
         insertInstr_Statement_IfElse(block, statementAST, variables)
     else:
         raise NotImplementedError(str(statementAST))
@@ -76,15 +76,15 @@ def insertInstr_Statement_IfElse(block, ifElseAST, variables):
     block.add(afterElseLabel)
 
 def insertInstr_Expression(block, expr, variables):
-    if isinstance(expr, ast.ComparisonExprAST):
+    if isinstance(expr, ast.ComparisonExpr):
         return insertInstr_Expression_Comparison(block, expr, variables)
-    elif isinstance(expr, ast.AddSubExprAST):
+    elif isinstance(expr, ast.AddSubExpr):
         return insertInstr_Expression_AddSub(block, expr, variables)
-    elif isinstance(expr, ast.MulDivExprAST):
+    elif isinstance(expr, ast.MulDivExpr):
         return insertInstr_Expression_MulDiv(block, expr, variables)
-    elif isinstance(expr, ast.ConstIntAST):
+    elif isinstance(expr, ast.ConstInt):
         return insertInstr_Expression_ConstInt(block, expr)
-    elif isinstance(expr, ast.VariableAST):
+    elif isinstance(expr, ast.Variable):
         return insertInstr_Expression_Variable(block, expr, variables)
 
 def insertInstr_Expression_Comparison(block, expr, variables):

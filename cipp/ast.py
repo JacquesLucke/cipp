@@ -1,8 +1,8 @@
-class ProgramAST:
+class Program:
     def __init__(self, functions):
         self.functions = functions
 
-class FunctionAST:
+class Function:
     def __init__(self, name, retType, arguments, statement):
         self.name = name
         self.retType = retType
@@ -12,14 +12,14 @@ class FunctionAST:
     def __repr__(self):
         return f"<{self.retType} {self.name}({self.arguments})>"
 
-class TypeAST:
+class Type:
     def __init__(self, name):
         self.name = name
 
     def __repr__(self):
         return self.name
 
-class ArgumentAST:
+class Argument:
     def __init__(self, name, dataType):
         self.name = name
         self.dataType = dataType
@@ -27,24 +27,26 @@ class ArgumentAST:
     def __repr__(self):
         return f"{self.dataType} {self.name}"
 
-class StmtAST:
+
+
+class Statement:
     pass
 
-class BlockStmtAST(StmtAST):
+class BlockStmt(Statement):
     def __init__(self, statements):
         self.statements = statements
 
     def __repr__(self):
         return "\n".join(map(str, self.statements))
 
-class ReturnStmtAST(StmtAST):
+class ReturnStmt(Statement):
     def __init__(self, expression):
         self.expression = expression
 
     def __repr__(self):
         return f"return {self.expression}"
 
-class LetStmtAST(StmtAST):
+class LetStmt(Statement):
     def __init__(self, name, dataType, expression):
         self.name = name
         self.dataType = dataType
@@ -53,7 +55,7 @@ class LetStmtAST(StmtAST):
     def __repr__(self):
         return f"let {self.dataType} {self.name} = {self.expression}"
 
-class WhileStmtAST(StmtAST):
+class WhileStmt(Statement):
     def __init__(self, condition, statement):
         self.condition = condition
         self.statement = statement
@@ -61,7 +63,7 @@ class WhileStmtAST(StmtAST):
     def __repr__(self):
         return f"while ({self.condition}) ..."
 
-class IfStmtAST(StmtAST):
+class IfStmt(Statement):
     def __init__(self, condition, thenStatement):
         self.condition = condition
         self.thenStatement = thenStatement
@@ -69,7 +71,7 @@ class IfStmtAST(StmtAST):
     def __repr__(self):
         return f"if ({self.condition}) ..."
 
-class IfElseStmtAST(StmtAST):
+class IfElseStmt(Statement):
     def __init__(self, condition, thenStatement, elseStatement):
         self.condition = condition
         self.thenStatement = thenStatement
@@ -78,7 +80,7 @@ class IfElseStmtAST(StmtAST):
     def __repr__(self):
         return f"if ({self.condition}) ...\nelse ..."
 
-class AssignmentStmtAST:
+class AssignmentStmt(Statement):
     def __init__(self, target, expression):
         self.target = target
         self.expression = expression
@@ -86,7 +88,7 @@ class AssignmentStmtAST:
     def __repr__(self):
         return f"{self.target} = {self.expression}"
 
-class ArrayAssignmentStmtAST:
+class ArrayAssignmentStmt(Statement):
     def __init__(self, target, offset, expression):
         self.target = target
         self.offset = offset
@@ -95,10 +97,12 @@ class ArrayAssignmentStmtAST:
     def __repr__(self):
         return f"{self.target}[{self.offset}] = {self.expression}"
 
-class ExpressionAST:
+
+
+class Expression:
     pass
 
-class ComparisonExprAST(ExpressionAST):
+class ComparisonExpr(Expression):
     def __init__(self, operator, left, right):
         self.operator = operator
         self.left = left 
@@ -107,7 +111,7 @@ class ComparisonExprAST(ExpressionAST):
     def __repr__(self):
         return f"{self.left}{self.operator}{self.right}"
 
-class AddSubExprAST(ExpressionAST):
+class AddSubExpr(Expression):
     def __init__(self, termsWithType):
         self.terms = termsWithType
 
@@ -117,7 +121,7 @@ class AddSubExprAST(ExpressionAST):
             string += term.operation + str(term.expr)
         return string
 
-class MulDivExprAST(ExpressionAST):
+class MulDivExpr(Expression):
     def __init__(self, termsWithType):
         self.terms = termsWithType
 
@@ -127,21 +131,21 @@ class MulDivExprAST(ExpressionAST):
             string += term.operation + str(term.expr)
         return string
 
-class VariableAST(ExpressionAST):
+class Variable(Expression):
     def __init__(self, name):
         self.name = name
 
     def __repr__(self):
         return self.name
 
-class ConstIntAST(ExpressionAST):
+class ConstInt(Expression):
     def __init__(self, value):
         self.value = value
 
     def __repr__(self):
         return str(self.value)
 
-class FunctionCallAST(ExpressionAST):
+class FunctionCall(Expression):
     def __init__(self, functionName, arguments):
         self.functionName = functionName
         self.arguments = arguments
@@ -150,18 +154,22 @@ class FunctionCallAST(ExpressionAST):
         return f"@{self.functionName}({', '.join(self.arguments)})"
 
 
+
 class AddedTerm:
     operation = "+"
     def __init__(self, expression):
         self.expr = expression
+
 class SubtractedTerm:
     operation = "-"
     def __init__(self, expression):
         self.expr = expression
+
 class MultipliedTerm:
     operation = "*"
     def __init__(self, expression):
         self.expr = expression
+        
 class DividedTerm:
     operation = "/"
     def __init__(self, expression):
