@@ -17,7 +17,7 @@ def createSingleCharToken(allowedChars):
 
     return SingleCharToken
 
-singleChars = "(){}[],=+-*/@;<>"
+singleChars = "(){}[],=+-*/@;<>!"
 SingleCharToken = createSingleCharToken(singleChars)
 
 class WhitespaceToken(Token):

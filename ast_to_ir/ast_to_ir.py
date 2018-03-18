@@ -1,12 +1,12 @@
 from cipp_parser.parser import (
     ProgramAST, AssignmentStmtAST, AddSubExprAST, ConstIntAST,
     VariableAST, MulDivExprAST, ReturnStmtAST, BlockStmtAST,
-    WhileStmtAST
+    WhileStmtAST, IfStmtAST, IfElseStmtAST, ComparisonExprAST
 )
 from ir_to_x64.ir import (
     ModuleIR, FunctionIR, VirtualRegister,
     InitializeInstrIR, TwoOpInstrIR, MoveInstrIR, ReturnInstrIR,
-    GotoIfZeroIR, GotoInstrIR
+    GotoIfZeroIR, GotoInstrIR, CompareInstrIR
 )
 
 def transformProgramToIR(programAST):
@@ -33,6 +33,12 @@ def insertInstr_Statement(block, statementAST, variables):
         insertInstr_Statement_Return(block, statementAST, variables)
     elif isinstance(statementAST, WhileStmtAST):
         insertInstr_Statement_While(block, statementAST, variables)
+    elif isinstance(statementAST, IfStmtAST):
+        insertInstr_Statement_If(block, statementAST, variables)
+    elif isinstance(statementAST, IfElseStmtAST):
+        insertInstr_Statement_IfElse(block, statementAST, variables)
+    else:
+        raise NotImplementedError(str(statementAST))
 
 def insertInstr_Statement_Block(block, blockAST, variables):
     for statement in blockAST.statements:
@@ -58,8 +64,29 @@ def insertInstr_Statement_While(block, whileAST, variables):
 
     block.add(afterLabel)
 
+def insertInstr_Statement_If(block, ifAST, variables):
+    afterLabel = block.newLabel("if_after")
+    condResult = insertInstr_Expression(block, ifAST.condition, variables)
+    block.add(GotoIfZeroIR(condResult, afterLabel))
+    insertInstr_Statement(block, ifAST.thenStatement, variables)
+    block.add(afterLabel)
+
+def insertInstr_Statement_IfElse(block, ifElseAST, variables):
+    startElseLabel = block.newLabel("else_start")
+    afterElseLabel = block.newLabel("else_end")
+
+    condResult = insertInstr_Expression(block, ifElseAST.condition, variables)
+    block.add(GotoIfZeroIR(condResult, startElseLabel))
+    insertInstr_Statement(block, ifElseAST.thenStatement, variables)
+    block.add(GotoInstrIR(afterElseLabel))
+    block.add(startElseLabel)
+    insertInstr_Statement(block, ifElseAST.elseStatement, variables)
+    block.add(afterElseLabel)
+
 def insertInstr_Expression(block, expr, variables):
-    if isinstance(expr, AddSubExprAST):
+    if isinstance(expr, ComparisonExprAST):
+        return insertInstr_Expression_Comparison(block, expr, variables)
+    elif isinstance(expr, AddSubExprAST):
         return insertInstr_Expression_AddSub(block, expr, variables)
     elif isinstance(expr, MulDivExprAST):
         return insertInstr_Expression_MulDiv(block, expr, variables)
@@ -67,20 +94,27 @@ def insertInstr_Expression(block, expr, variables):
         return insertInstr_Expression_ConstInt(block, expr)
     elif isinstance(expr, VariableAST):
         return insertInstr_Expression_Variable(block, expr, variables)
+
+def insertInstr_Expression_Comparison(block, expr, variables):
+    result = VirtualRegister()
+    a = insertInstr_Expression(block, expr.left, variables)
+    b = insertInstr_Expression(block, expr.right, variables)
+    block.add(CompareInstrIR(expr.operator, result, a, b))
+    return result
         
-def insertInstr_Expression_AddSub(block, expression, variables):
+def insertInstr_Expression_AddSub(block, expr, variables):
     result = VirtualRegister()
     block.add(InitializeInstrIR(result, 0))
-    for term in expression.terms:
+    for term in expr.terms:
         reg = insertInstr_Expression(block, term.expr, variables)
         instr = TwoOpInstrIR(term.operation, result, result, reg)
         block.add(instr)
     return result
 
-def insertInstr_Expression_MulDiv(block, expression, variables):
+def insertInstr_Expression_MulDiv(block, expr, variables):
     result = VirtualRegister()
     block.add(InitializeInstrIR(result, 1))
-    for term in expression.terms:
+    for term in expr.terms:
         reg = insertInstr_Expression(block, term.expr, variables)
         instr = TwoOpInstrIR(term.operation, result, result, reg)
         block.add(instr)

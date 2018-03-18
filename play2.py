@@ -1,3 +1,4 @@
+import sys
 from cipp_parser import astFromString
 from ast_to_ir.ast_to_ir import transformProgramToIR
 from ir_to_x64.ir_to_x64 import compileToX64
@@ -9,16 +10,22 @@ from ctypes import CFUNCTYPE, c_int
 
 code = '''
     def int @myfunc(int x, int y) {
-        x = x + 10 - 1;
-        return x+(3+y) - 10;
+        if (x != y) return 100;
+        else return 200;
     }
 '''
 
 ast = astFromString(code)
 module = transformProgramToIR(ast)
-block = compileToX64(module.functions[0])
-hexCode = block.toMachineCode().toHex()
+# print(module.functions[0].block)
 
+block = compileToX64(module.functions[0])
+# print()
+print(block.toIntelSyntax())
+# sys.exit()
+
+hexCode = block.toMachineCode().toHex()
 f = createFunctionFromHex(CFUNCTYPE(c_int, c_int, c_int), hexCode)
-print(f(10, 22))
+
+print(f(19, 19))
 

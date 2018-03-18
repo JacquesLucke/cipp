@@ -108,6 +108,19 @@ class MoveInstrIR(InstructionIR):
     def __repr__(self):
         return f"{self.target} = {self.source}"
 
+class CompareInstrIR(InstructionIR):
+    def __init__(self, operation, target, a, b):
+        self.operation = operation
+        self.target = target
+        self.a = a
+        self.b = b
+
+    def getVRegisters(self):
+        return [self.target, self.a, self.b]
+
+    def __repr__(self):
+        return f"{self.target} = {self.a} {self.operation} {self.b}"
+
 class ReturnInstrIR(InstructionIR):
     def __init__(self, vreg = None):
         self.vreg = vreg

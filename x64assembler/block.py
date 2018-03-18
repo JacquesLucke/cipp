@@ -32,7 +32,8 @@ class Block:
         return "\n".join(self._iterIntelSyntaxLines())
 
     def _iterIntelSyntaxLines(self):
-        yield from map(str, self.elements)
+        for element in self.elements:
+            yield element.toIntelSyntax()
 
     def toMachineCode(self):
         position = 0
@@ -50,7 +51,7 @@ class Block:
                 machineCode = element.toMachineCode()
                 machineCodes.append((element, position, machineCode))
                 position += machineCode.byteLength
-                
+
         resultParts = []
 
         for instruction, ownPosition, machineCode in machineCodes:

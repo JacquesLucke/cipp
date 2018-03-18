@@ -145,7 +145,7 @@ def parseExpression_ComparisonLevel(tokens):
     if nextIsComparisonOperator(tokens):
         operator = parseComparisonOperator(tokens)
         expressionRight = parseExpression_AddSubLevel(tokens)
-        return ComparisonAST(operator, expressionLeft, expressionRight)
+        return ComparisonExprAST(operator, expressionLeft, expressionRight)
     else:
         return expressionLeft
 
@@ -408,7 +408,7 @@ class ArrayAssignmentStmtAST:
 class ExpressionAST:
     pass
 
-class ComparisonAST(ExpressionAST):
+class ComparisonExprAST(ExpressionAST):
     def __init__(self, operator, left, right):
         self.operator = operator
         self.left = left 

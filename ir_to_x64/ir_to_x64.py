@@ -9,7 +9,7 @@ from x64assembler.registers import allRegisters
 
 from . ir import (
     InitializeInstrIR, MoveInstrIR, ReturnInstrIR, TwoOpInstrIR,
-    GotoInstrIR, GotoIfZeroIR,
+    GotoInstrIR, GotoIfZeroIR, CompareInstrIR,
     InstructionIR, LabelIR
 )
 
@@ -44,7 +44,15 @@ def irInstructionToAssembly(instr, vregOffsets):
     if isinstance(instr, InitializeInstrIR):
         yield MovImmToRegInstr(rax, instr.value)
         yield storeVirtualRegister(rax, instr.vreg, vregOffsets)
-    if isinstance(instr, MoveInstrIR):
+    elif isinstance(instr, CompareInstrIR):
+        yield loadVirtualRegister(rax, instr.a, vregOffsets)
+        yield loadVirtualRegister(rcx, instr.b, vregOffsets)
+        if instr.operation == "!=":
+            yield SubRegFromRegInstr(rax, rcx)
+            yield storeVirtualRegister(rax, instr.target, vregOffsets)
+        else:
+            raise NotImplementedError("unknown operation: " + instr.operation)
+    elif isinstance(instr, MoveInstrIR):
         yield loadVirtualRegister(rax, instr.source, vregOffsets)
         yield storeVirtualRegister(rax, instr.target, vregOffsets)
     elif isinstance(instr, TwoOpInstrIR):
@@ -65,6 +73,8 @@ def irInstructionToAssembly(instr, vregOffsets):
         yield loadVirtualRegister(rcx, instr.vreg, vregOffsets)
         yield CompareInstr(rax, rcx)
         yield JmpZeroInstr(instr.label.name)
+    else:
+        raise NotImplementedError(str(instr))
 
 def changeStackPointer(byteAmount):
     return AddImmToRegInstr(rsp, byteAmount)
