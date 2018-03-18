@@ -16,3 +16,9 @@ from . jumps import (
 from . simple_two_reg import (
     AddRegToRegInstr, SubRegFromRegInstr, CompareInstr
 )
+
+from . set_byte_on_condition import (
+    SetIfNotEqualInstr, SetIfEqualInstr,
+    SetIfGreaterInstr, SetIfLessInstr,
+    SetIfGreaterOrEqualInstr, SetIfLessOrEqualInstr
+)

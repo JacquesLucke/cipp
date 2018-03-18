@@ -30,3 +30,11 @@ class SetIfGreaterInstr(SetByteOnConditionInstr):
 class SetIfLessInstr(SetByteOnConditionInstr):
     opcodeHex = "0f9c"
     intelSyntaxName = "setl"
+
+class SetIfGreaterOrEqualInstr(SetByteOnConditionInstr):
+    opcodeHex = "0f9d"
+    intelSyntaxName = "setge"
+
+class SetIfLessOrEqualInstr(SetByteOnConditionInstr):
+    opcodeHex = "0f9e"
+    intelSyntaxName = "setle"

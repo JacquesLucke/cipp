@@ -10,22 +10,24 @@ from ctypes import CFUNCTYPE, c_int
 
 code = '''
     def int @myfunc(int x, int y) {
-        if (x != y) return 100;
-        else return 200;
+        while (x <= y) {
+            x = x + 1;
+        }
+        return x;
     }
 '''
 
 ast = astFromString(code)
 module = transformProgramToIR(ast)
-# print(module.functions[0].block)
+print(module.functions[0].block)
 
 block = compileToX64(module.functions[0])
 # print()
-print(block.toIntelSyntax())
+# print(block.toIntelSyntax())
 # sys.exit()
 
 hexCode = block.toMachineCode().toHex()
 f = createFunctionFromHex(CFUNCTYPE(c_int, c_int, c_int), hexCode)
 
-print(f(19, 19))
+print(f(0, 10))
 

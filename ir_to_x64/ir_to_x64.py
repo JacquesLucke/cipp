@@ -1,7 +1,10 @@
 from x64assembler.instructions import (
     AddRegToRegInstr, MovImmToRegInstr, MovMemToRegInstr, MovRegToMemInstr,
     RetInstr, AddImmToRegInstr, SubRegFromRegInstr,
-    JmpInstr, JmpZeroInstr, CompareInstr
+    JmpInstr, JmpZeroInstr, CompareInstr,
+    SetIfEqualInstr, SetIfNotEqualInstr, 
+    SetIfGreaterInstr, SetIfLessInstr,
+    SetIfGreaterOrEqualInstr, SetIfLessOrEqualInstr
 )
 
 from x64assembler.block import Block, Label
@@ -47,11 +50,17 @@ def irInstructionToAssembly(instr, vregOffsets):
     elif isinstance(instr, CompareInstrIR):
         yield loadVirtualRegister(rax, instr.a, vregOffsets)
         yield loadVirtualRegister(rcx, instr.b, vregOffsets)
-        if instr.operation == "!=":
-            yield SubRegFromRegInstr(rax, rcx)
-            yield storeVirtualRegister(rax, instr.target, vregOffsets)
-        else:
-            raise NotImplementedError("unknown operation: " + instr.operation)
+        yield CompareInstr(rax, rcx)
+        yield MovImmToRegInstr(rax, 0)
+        yield {
+            "!=" : SetIfNotEqualInstr,
+            "==" : SetIfEqualInstr,
+            ">" : SetIfGreaterInstr,
+            "<" : SetIfLessInstr,
+            ">=" : SetIfGreaterOrEqualInstr,
+            "<=" : SetIfLessOrEqualInstr
+        }[instr.operation](al)
+        yield storeVirtualRegister(rax, instr.target, vregOffsets)
     elif isinstance(instr, MoveInstrIR):
         yield loadVirtualRegister(rax, instr.source, vregOffsets)
         yield storeVirtualRegister(rax, instr.target, vregOffsets)
