@@ -1,12 +1,12 @@
-class ModuleIR:
+class Module:
     def __init__(self, functions):
         self.functions = functions
 
-class FunctionIR:
+class Function:
     def __init__(self, name):
         self.name = name
         self.arguments = []
-        self.block = CodeBlockIR()
+        self.block = CodeBlock()
 
     def addArgument(self):
         reg = VirtualRegister()
@@ -22,7 +22,7 @@ class FunctionIR:
     def __repr__(self):
         return f"{self.name} ({', '.join(map(str, self.arguments))})\n{self.block}"
 
-class CodeBlockIR:
+class CodeBlock:
     def __init__(self):
         self.elements = []
         self.usedLabels = set()
@@ -38,11 +38,11 @@ class CodeBlockIR:
             if label not in self.usedLabels:
                 break
         self.usedLabels.add(label)
-        return LabelIR(label)
+        return Label(label)
 
     def iterUsedVRegisters(self):
         for element in self.elements:
-            if isinstance(element, InstructionIR):
+            if isinstance(element, Instruction):
                 yield from element.getVRegisters()
 
     def __iter__(self):
@@ -53,12 +53,12 @@ class CodeBlockIR:
 
     def _iterReprLines(self):
         for element in self.elements:
-            if isinstance(element, InstructionIR):
+            if isinstance(element, Instruction):
                 yield str(element)
-            elif isinstance(element, LabelIR):
+            elif isinstance(element, Label):
                 yield f"{element.name}:"
 
-class LabelIR:
+class Label:
     def __init__(self, name):
         self.name = name
 
@@ -69,11 +69,11 @@ class LabelIR:
         return f"<IR Label: {self.name}>"
     
 
-class InstructionIR:
+class Instruction:
     def getVRegisters(self):
         return []
 
-class TwoOpInstrIR(InstructionIR):
+class TwoOpInstr(Instruction):
     def __init__(self, operation, target, a, b):
         self.operation = operation
         self.target = target
@@ -86,7 +86,7 @@ class TwoOpInstrIR(InstructionIR):
     def __repr__(self):
         return f"{self.target} = {self.a} {self.operation} {self.b}"
 
-class InitializeInstrIR(InstructionIR):
+class InitializeInstr(Instruction):
     def __init__(self, vreg, value):
         self.vreg = vreg
         self.value = value
@@ -97,7 +97,7 @@ class InitializeInstrIR(InstructionIR):
     def __repr__(self):
         return f"{self.vreg} = {self.value}"
 
-class MoveInstrIR(InstructionIR):
+class MoveInstr(Instruction):
     def __init__(self, target, source):
         self.target = target
         self.source = source
@@ -108,7 +108,7 @@ class MoveInstrIR(InstructionIR):
     def __repr__(self):
         return f"{self.target} = {self.source}"
 
-class CompareInstrIR(InstructionIR):
+class CompareInstr(Instruction):
     def __init__(self, operation, target, a, b):
         self.operation = operation
         self.target = target
@@ -121,7 +121,7 @@ class CompareInstrIR(InstructionIR):
     def __repr__(self):
         return f"{self.target} = {self.a} {self.operation} {self.b}"
 
-class ReturnInstrIR(InstructionIR):
+class ReturnInstr(Instruction):
     def __init__(self, vreg = None):
         self.vreg = vreg
 
@@ -131,14 +131,14 @@ class ReturnInstrIR(InstructionIR):
     def __repr__(self):
         return f"return {self.vreg}"
 
-class GotoInstrIR(InstructionIR):
+class GotoInstr(Instruction):
     def __init__(self, label):
         self.label = label
 
     def __repr__(self):
         return f"goto {self.label.name}"
 
-class GotoIfZeroIR(InstructionIR):
+class GotoIfZero(Instruction):
     def __init__(self, vreg, label):
         self.vreg = vreg
         self.label = label
