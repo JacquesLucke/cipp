@@ -142,30 +142,11 @@ def parseExpression_ComparisonLevel(tokens):
         return expressionLeft
 
 def parseComparisonOperator(tokens):
-    if nextIsLetter(tokens, "="):
-        acceptLetter(tokens, "=")
-        acceptLetter(tokens, "=")
-        return "=="
-    elif nextIsLetter(tokens, "<"):
-        acceptLetter(tokens, "<")
-        if nextIsLetter(tokens, "="):
-            acceptLetter(tokens, "=")
-            return "<="
-        else:
-            return "<"
-    elif nextIsLetter(tokens, ">"):
-        acceptLetter(tokens, ">")
-        if nextIsLetter(tokens, "="):
-            acceptLetter(tokens, "=")
-            return ">="
-        else:
-            return ">"
-    elif nextIsLetter(tokens, "!"):
-        acceptLetter(tokens, "!")
-        acceptLetter(tokens, "=")
-        return "!="
-    else:
-        raise Exception("unknown comparison operator")
+    for operator in ("==", "<=", ">=", "!=", "<", ">"):
+        if nextLettersAre(tokens, operator):
+            acceptLetters(tokens, operator)
+            return operator
+    raise Exception("unknown comparison operator")
 
 def parseExpression_AddSubLevel(tokens):
     terms = []
@@ -265,6 +246,10 @@ def acceptKeyword(tokens, keyword):
     else:
         raise Exception(f"expected keyword '{keyword}'")
 
+def acceptLetters(tokens, letters):
+    for letter in letters:
+        acceptLetter(tokens, letter)
+
 def acceptLetter(tokens, letter):
     if nextIsLetter(tokens, letter):
         tokens.takeNext()
@@ -300,6 +285,13 @@ def nextIsLetter(tokens, letter):
 
 def nextIsOneOfLetters(tokens, *letters):
     return any(nextIsLetter(tokens, c) for c in letters)
+
+def nextLettersAre(tokens, letters):
+    if len(tokens) < len(letters): return False
+    for token, letter in zip(tokens.getLookahead(len(letters)), letters):
+        if not isinstance(token, SingleCharToken) or token.value != letter:
+            return False
+    return True
 
 def nextIsIdentifier(tokens):
     if len(tokens) == 0: return False
