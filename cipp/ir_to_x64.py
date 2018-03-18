@@ -5,8 +5,12 @@ from . x64assembler.registers import allRegisters
 
 globals().update(allRegisters)
 
-def compileToX64(functionIR):
-    elements = list(compileFunction(functionIR))
+def compileModule(moduleIR):
+    elements = []
+    for functionIR in moduleIR.functions:
+        elements.append(Label(functionIR.name))
+        elements.extend(compileFunction(functionIR))
+
     block = Block(elements)
     return block
 
@@ -69,6 +73,11 @@ def irInstructionToAssembly(instr, vregOffsets):
         yield loadVirtualRegister(rcx, instr.vreg, vregOffsets)
         yield x64.CompareInstr(rax, rcx)
         yield x64.JmpZeroInstr(instr.label.name)
+    elif isinstance(instr, ir.CallInstr):
+        for vreg, reg in zip(instr.arguments, [rcx, rdx, r8, r9]):
+            yield loadVirtualRegister(reg, vreg, vregOffsets)
+        yield x64.CallInstr(instr.label)
+        yield storeVirtualRegister(rax, instr.target, vregOffsets)
     else:
         raise NotImplementedError(str(instr))
 

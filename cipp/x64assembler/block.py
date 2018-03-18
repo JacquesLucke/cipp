@@ -58,12 +58,12 @@ class Block:
             positionOfNextInstr = ownPosition + machineCode.byteLength
 
             for link in instruction.getLinks():
-                if link.label not in positionByLabel:
+                if link.label in positionByLabel:
+                    linkedPosition = positionByLabel[link.label]
+                    offset = linkedPosition - positionOfNextInstr
+                    machineCode = link.insertOffset(machineCode, offset)
+                else:
                     raise Exception(f"cannot find label: {link.label}")
-
-                linkedPosition = positionByLabel[link.label]
-                offset = linkedPosition - positionOfNextInstr
-                machineCode = link.insertOffset(machineCode, offset)
             
             resultParts.append(machineCode)
         

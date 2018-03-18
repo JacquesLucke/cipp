@@ -23,21 +23,17 @@ class Function:
         return f"{self.name} ({', '.join(map(str, self.arguments))})\n{self.block}"
 
 class CodeBlock:
+    uniqueNumberCounter = 0
+
     def __init__(self):
         self.elements = []
-        self.usedLabels = set()
 
     def add(self, element):
         self.elements.append(element)
 
     def newLabel(self, prefix):
-        i = 0
-        while True:
-            i += 1
-            label = f"{prefix}_{i}"
-            if label not in self.usedLabels:
-                break
-        self.usedLabels.add(label)
+        type(self).uniqueNumberCounter += 1
+        label = f"{prefix}{self.uniqueNumberCounter}"
         return Label(label)
 
     def iterUsedVRegisters(self):
@@ -149,6 +145,18 @@ class ReturnInstr(Instruction):
 
     def __repr__(self):
         return f"return {self.vreg}"
+
+class CallInstr(Instruction):
+    def __init__(self, label, target, arguments):
+        self.label = label
+        self.target = target
+        self.arguments = arguments
+
+    def getVRegisters(self):
+        return self.arguments + [self.target]
+
+    def __repr__(self):
+        return f"call {self.label}({', '.join(map(str, self.arguments))})"
 
 class GotoInstr(Instruction):
     def __init__(self, label):

@@ -14,6 +14,19 @@ class JmpInstr(Instruction):
     def getLinks(self):
         return [JumpRelative32(self.label, startByte = 1)]
 
+class CallInstr(Instruction):
+    def __init__(self, label):
+        self.label = label
+
+    def toMachineCode(self):
+        return Bits.fromHex("e8") + Bits.zeros(32)
+
+    def toIntelSyntax(self):
+        return f"call {self.label}"
+
+    def getLinks(self):
+        return [JumpRelative32(self.label, startByte = 1)]
+
 class JmpNotZeroInstr(Instruction):
     def __init__(self, label):
         self.label = label

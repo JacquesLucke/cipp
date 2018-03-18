@@ -29,6 +29,8 @@ def insertInstr_Statement(block, statementAST, variables):
         insertInstr_Statement_If(block, statementAST, variables)
     elif isinstance(statementAST, ast.IfElseStmt):
         insertInstr_Statement_IfElse(block, statementAST, variables)
+    elif isinstance(statementAST, ast.LetStmt):
+        insertInstr_Statement_Let(block, statementAST, variables)
     else:
         raise NotImplementedError(str(statementAST))
 
@@ -75,6 +77,12 @@ def insertInstr_Statement_IfElse(block, ifElseAST, variables):
     insertInstr_Statement(block, ifElseAST.elseStatement, variables)
     block.add(afterElseLabel)
 
+def insertInstr_Statement_Let(block, letAST, variables):
+    value = insertInstr_Expression(block, letAST.expression, variables)
+    variables[letAST.name] = value    
+
+
+
 def insertInstr_Expression(block, expr, variables):
     if isinstance(expr, ast.ComparisonExpr):
         return insertInstr_Expression_Comparison(block, expr, variables)
@@ -86,6 +94,8 @@ def insertInstr_Expression(block, expr, variables):
         return insertInstr_Expression_ConstInt(block, expr)
     elif isinstance(expr, ast.Variable):
         return insertInstr_Expression_Variable(block, expr, variables)
+    elif isinstance(expr, ast.FunctionCall):
+        return insertInstr_Expression_FunctionCall(block, expr, variables)
 
 def insertInstr_Expression_Comparison(block, expr, variables):
     result = ir.VirtualRegister()
@@ -119,3 +129,9 @@ def insertInstr_Expression_ConstInt(block, intAST):
         
 def insertInstr_Expression_Variable(block, variableAST, variables):
     return variables[variableAST.name]
+
+def insertInstr_Expression_FunctionCall(block, functionCallAST, variables):
+    argumentRegs = [insertInstr_Expression(block, expr, variables) for expr in functionCallAST.arguments]
+    result = ir.VirtualRegister()
+    block.add(ir.CallInstr(functionCallAST.functionName, result, argumentRegs))
+    return result
