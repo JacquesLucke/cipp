@@ -216,25 +216,21 @@ def parseCallArguments(tokens):
     return parseList(tokens, parseExpression, "(", ")", ",")
 
 def parseList(tokens, parseElement, start, end, separator = None):
+    elements = []
     acceptLetter(tokens, start)
-    if nextIsLetter(tokens, end):
-        acceptLetter(tokens, end)
-        return []
-    else:
-        elements = []
-        while True:
-            element = parseElement(tokens)
-            elements.append(element)
-            if separator is None:
-                if nextIsLetter(tokens, end):
-                    break
+    while not nextIsLetter(tokens, end):
+        element = parseElement(tokens)
+        elements.append(element)
+        if separator is None:
+            if nextIsLetter(tokens, end):
+                break
+        else:
+            if nextIsLetter(tokens, separator):
+                acceptLetter(tokens, separator)
             else:
-                if nextIsLetter(tokens, separator):
-                    acceptLetter(tokens, separator)
-                else:
-                    break
-        acceptLetter(tokens, end)
-        return elements
+                break
+    acceptLetter(tokens, end)
+    return elements
 
 
 
