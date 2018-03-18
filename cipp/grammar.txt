@@ -1,0 +1,35 @@
+program : function*
+
+function : 'def' type '@' '(' argument-list ')' statement
+
+argument-list : (argument ',')*
+argument : type IDENTIFIER
+
+type : [not sure yet]
+
+statement : if-statement
+          | let-statement
+          | block-statement
+          | while-statement
+          | return-statement
+          | assignment-statement
+          | array-assignment-statement
+
+block-statement :            '{' statement* '}'
+return-statement :           'return' expression ';'
+let-statement :              'let' type IDENTIFIER '=' expression ';'
+while-statement :            'while' '(' expression ')' statement
+if-statement :               'if' '(' expression ')' statement ('else' statement)?
+assignment-statement :       IDENTIFIER '=' expression ';'
+array-assignment-statement : IDENTIFIER '[' expression ']' '=' expression ';'
+
+expression :  expression2 (COMPARISON_OPERATOR expression2)?
+expression2 : expression3 (('+' | '-') expression3)*
+expression3 : expression4 (('*' | '/') expression4)*
+expression4 : NUMBER
+            | IDENTIFIER
+            | '(' expression ')'
+            | function-call
+
+function-call : '@' IDENTIFIER '(' call-argument-list ')'
+call-argument-list : (expression ',')*
