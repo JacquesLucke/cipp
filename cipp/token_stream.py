@@ -1,4 +1,4 @@
-from lexer import Token
+from . lexer import Token
 
 class TokenStream:
     def __init__(self, tokens):

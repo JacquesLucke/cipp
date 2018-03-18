@@ -1,4 +1,4 @@
-from x64assembler.instructions import (
+from . x64assembler.instructions import (
     AddRegToRegInstr, MovImmToRegInstr, MovMemToRegInstr, MovRegToMemInstr,
     RetInstr, AddImmToRegInstr, SubRegFromRegInstr,
     JmpInstr, JmpZeroInstr, CompareInstr,
@@ -7,8 +7,8 @@ from x64assembler.instructions import (
     SetIfGreaterOrEqualInstr, SetIfLessOrEqualInstr
 )
 
-from x64assembler.block import Block, Label
-from x64assembler.registers import allRegisters
+from . x64assembler.block import Block, Label
+from . x64assembler.registers import allRegisters
 
 from . ir import (
     InitializeInstrIR, MoveInstrIR, ReturnInstrIR, TwoOpInstrIR,

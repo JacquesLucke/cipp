@@ -1,8 +1,9 @@
 import unittest
-from lexer import Lexer
-from . lexing import cippLexer
+from . lexer import Lexer
+from . parser import cippLexer, SingleCharToken
+
 from . tokens import (
-    CommentToken, SingleCharToken, WhitespaceToken, 
+    CommentToken, WhitespaceToken, 
     IdentifierToken, IntegerToken,
     createSingleCharToken
 )

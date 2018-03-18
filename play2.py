@@ -1,7 +1,7 @@
 import sys
-from cipp_parser import astFromString
-from ast_to_ir.ast_to_ir import transformProgramToIR
-from ir_to_x64.ir_to_x64 import compileToX64
+from cipp.parser import astFromString
+from cipp.ast_to_ir import transformProgramToIR
+from cipp.ir_to_x64 import compileToX64
 from exec_utils import createFunctionFromHex
 from ctypes import CFUNCTYPE, c_int
 
@@ -13,17 +13,18 @@ code = '''
         while (x <= y) {
             x = x + 1;
         }
+        x = x + 100;
         return x;
     }
 '''
 
 ast = astFromString(code)
 module = transformProgramToIR(ast)
-print(module.functions[0].block)
+# print(module.functions[0].block)
 
 block = compileToX64(module.functions[0])
 # print()
-# print(block.toIntelSyntax())
+print(block.toIntelSyntax())
 # sys.exit()
 
 hexCode = block.toMachineCode().toHex()

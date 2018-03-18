@@ -1,9 +1,9 @@
-from cipp_parser.parser import (
+from . parser import (
     ProgramAST, AssignmentStmtAST, AddSubExprAST, ConstIntAST,
     VariableAST, MulDivExprAST, ReturnStmtAST, BlockStmtAST,
     WhileStmtAST, IfStmtAST, IfElseStmtAST, ComparisonExprAST
 )
-from ir_to_x64.ir import (
+from . ir import (
     ModuleIR, FunctionIR, VirtualRegister,
     InitializeInstrIR, TwoOpInstrIR, MoveInstrIR, ReturnInstrIR,
     GotoIfZeroIR, GotoInstrIR, CompareInstrIR

@@ -1,24 +1,4 @@
-from lexer import Token, CharState
-
-def createSingleCharToken(allowedChars):
-    class SingleCharToken(Token):
-        @classmethod
-        def startswith(cls, char):
-            return char in allowedChars
-
-        def __init__(self, firstChar):
-            self.value = firstChar
-
-        def checkNext(self, char):
-            return CharState.NOT_CONSUMED
-
-        def __repr__(self):
-            return f"<Token: {self.value}>"
-
-    return SingleCharToken
-
-singleChars = "(){}[],=+-*/@;<>!"
-SingleCharToken = createSingleCharToken(singleChars)
+from . lexer import Token, CharState
 
 class WhitespaceToken(Token):
     whitespaceChars = tuple(" \t\n\r")
@@ -33,10 +13,6 @@ class WhitespaceToken(Token):
         else:
             return CharState.NOT_CONSUMED
 
-asciiLowerCase = "abcdefghijklmnopqrstuvwxyz"
-asciiUpperCase = asciiLowerCase.upper()
-asciiLetters = asciiLowerCase + asciiUpperCase
-digits = "0123456789"
 
 class IdentifierToken(Token):
     @classmethod
@@ -55,6 +31,7 @@ class IdentifierToken(Token):
 
     def __repr__(self):
         return f"<{type(self).__name__}: {self.value}>"
+
 
 class IntegerToken(Token):
     @classmethod
@@ -80,6 +57,7 @@ class IntegerToken(Token):
     def __repr__(self):
         return f"<{type(self).__name__}: {self.value}>"
 
+
 class CommentToken(Token):
     @classmethod
     def startswith(cls, char):
@@ -100,3 +78,26 @@ class CommentToken(Token):
 
     def __repr__(self):
         return f"<{type(self).__name__}: {self.value}>"
+
+
+def createSingleCharToken(allowedChars):
+    class SingleCharToken(Token):
+        @classmethod
+        def startswith(cls, char):
+            return char in allowedChars
+
+        def __init__(self, firstChar):
+            self.value = firstChar
+
+        def checkNext(self, char):
+            return CharState.NOT_CONSUMED
+
+        def __repr__(self):
+            return f"<Token: {self.value}>"
+
+    return SingleCharToken
+
+asciiLowerCase = "abcdefghijklmnopqrstuvwxyz"
+asciiUpperCase = asciiLowerCase.upper()
+asciiLetters = asciiLowerCase + asciiUpperCase
+digits = "0123456789"

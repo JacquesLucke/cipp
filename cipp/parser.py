@@ -1,6 +1,18 @@
-from . lexing import cippLexer
+from . lexer import Lexer
 from . token_stream import TokenStream
-from . tokens import IdentifierToken, IntegerToken, SingleCharToken
+
+from . tokens import (
+    createSingleCharToken,
+    IdentifierToken, IntegerToken,
+    CommentToken, WhitespaceToken
+)
+
+SingleCharToken = createSingleCharToken("(){}[],=+-*/@;<>!")
+cippLexer = Lexer(
+    [IdentifierToken, IntegerToken, CommentToken, 
+     SingleCharToken, WhitespaceToken], 
+    ignoredTokens = [WhitespaceToken, CommentToken]
+)
 
 def astFromString(string):
     tokens = stringToTokenStream(string)
