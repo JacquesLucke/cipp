@@ -39,22 +39,7 @@ def parseFunction(tokens):
     return ast.Function(name, retType, arguments, statement)
 
 def parseArguments(tokens):
-    acceptLetter(tokens, "(")
-    if nextIsLetter(tokens, ")"):
-        acceptLetter(tokens, ")")
-        return []
-    else:
-        arguments = []
-        while True:
-            argument = parseArgument(tokens)
-            arguments.append(argument)
-            if nextIsLetter(tokens, ","):
-                acceptLetter(tokens, ",")
-                continue
-            else:
-                break
-        acceptLetter(tokens, ")")
-        return arguments
+    return parseList(tokens, parseArgument, "(", ")", ",")
 
 def parseArgument(tokens):
     dataType = parseType(tokens)
@@ -82,16 +67,10 @@ def parseStatement(tokens):
         raise Exception("unknown statement type")
 
 def parseStatement_Block(tokens, a = 0):
-    statements = []
-    acceptLetter(tokens, "{")
-    while not nextIsLetter(tokens, "}"):
-        statement = parseStatement(tokens)
-        statements.append(statement)
-    acceptLetter(tokens, "}")
-
+    statements = parseList(tokens, parseStatement, "{", "}")
     if len(statements) == 1:
         return statements[0]
-    else:
+    else: 
         return ast.BlockStmt(statements)
 
 def parseStatement_Return(tokens):
@@ -250,21 +229,28 @@ def parseFunctionCall(tokens):
     return ast.FunctionCall(name, arguments)
 
 def parseCallArguments(tokens):
-    acceptLetter(tokens, "(")
-    if nextIsLetter(tokens, ")"):
+    return parseList(tokens, parseExpression, "(", ")", ",")
+
+def parseList(tokens, parseElement, start, end, separator = None):
+    acceptLetter(tokens, start)
+    if nextIsLetter(tokens, end):
+        acceptLetter(tokens, end)
         return []
     else:
-        arguments = []
+        elements = []
         while True:
-            expression = parseExpression(tokens)
-            arguments.append(expression)
-            if nextIsLetter(tokens, ","):
-                acceptLetter(tokens, ",")
-                continue
+            element = parseElement(tokens)
+            elements.append(element)
+            if separator is None:
+                if nextIsLetter(tokens, end):
+                    break
             else:
-                break
-        acceptLetter(tokens, ")")
-        return arguments
+                if nextIsLetter(tokens, separator):
+                    acceptLetter(tokens, separator)
+                else:
+                    break
+        acceptLetter(tokens, end)
+        return elements
 
 
 
