@@ -221,10 +221,7 @@ def parseList(tokens, parseElement, start, end, separator = None):
     while not nextIsLetter(tokens, end):
         element = parseElement(tokens)
         elements.append(element)
-        if separator is None:
-            if nextIsLetter(tokens, end):
-                break
-        else:
+        if separator is not None:
             if nextIsLetter(tokens, separator):
                 acceptLetter(tokens, separator)
             else:
