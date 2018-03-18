@@ -24,10 +24,11 @@ def compileFunction(functionIR):
 
     yield from prepareStack(vregOffsets)
 
-    for reg, vreg in zip([rcx, rdx, r8, r9], functionIR.arguments):
+    for reg, vreg in zip([rcx, rdx, r8, r9], functionIR.arguments): # windows
+    #for reg, vreg in zip([rdi, rsi, rdx, rcx, r8, r9], functionIR.arguments): # linux
         yield storeVirtualRegister(reg, vreg, vregOffsets)
 
-    for instr in functionIR.entryBlock.instructions:
+    for instr in functionIR.instructions:
         yield from compileInstruction(instr, vregOffsets)
 
 def compileInstruction(instr, vregOffsets):

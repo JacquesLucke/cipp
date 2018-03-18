@@ -5,36 +5,34 @@ class ModuleIR:
 class FunctionIR:
     def __init__(self, name):
         self.name = name
-        self.entryBlock = BlockIR()
         self.arguments = []
+        self.instructions = []
 
     def addArgument(self):
         reg = VirtualRegister()
         self.arguments.append(reg)
         return reg
     
+    def addInstruction(self, instruction):
+        self.instructions.append(instruction)
+    
     def getUsedVRegisters(self):
         registers = set()
         registers.update(self.arguments)
-        registers.update(self.entryBlock.iterVRegisters())
+        registers.update(self.iterVRegistersInInstructions())
         return registers
 
-class BlockIR:
-    def __init__(self):
-        self.instructions = []
-
-    def append(self, instruction):
-        self.instructions.append(instruction)
-
-    def iterVRegisters(self):
+    def iterVRegistersInInstructions(self):
         for instr in self.instructions:
             yield from instr.getVRegisters()
 
     def __repr__(self):
         return "\n".join(map(str, self.instructions))
+    
 
 class InstructionIR:
-    pass
+    def getVRegisters(self):
+        return []
 
 class TwoOpInstrIR(InstructionIR):
     def __init__(self, operation, target, a, b):

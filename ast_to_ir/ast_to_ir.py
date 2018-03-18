@@ -3,7 +3,7 @@ from cipp_parser.parser import (
     VariableAST, MulDivExprAST, ReturnStmtAST, BlockStmtAST
 )
 from ir_to_x64.ir import (
-    ModuleIR, FunctionIR, BlockIR, VirtualRegister,
+    ModuleIR, FunctionIR, VirtualRegister,
     InitializeInstrIR, TwoOpInstrIR, MoveInstrIR, ReturnInstrIR
 )
 
@@ -18,63 +18,66 @@ def transformFunctionToIR(functionAST):
     for argument in functionAST.arguments:
         variables[argument.name] = functionIR.addArgument()
 
-    entry = functionIR.entryBlock
-    transformStatementToIR(functionAST.statement, entry, variables)
+    instructions = []
+    insertInstr_Statement(instructions, functionAST.statement, variables)
+
+    for instr in instructions:
+        functionIR.addInstruction(instr)
 
     return functionIR
 
-def transformStatementToIR(statementAST, block, variables):
+def insertInstr_Statement(instructions, statementAST, variables):
     if isinstance(statementAST, BlockStmtAST):
-        transformStatementToIR_Block(statementAST, block, variables)
+        insertInstr_Statement_Block(instructions, statementAST, variables)
     elif isinstance(statementAST, AssignmentStmtAST):
-        transformStatementToIR_Assignment(statementAST, block, variables)
+        insertInstr_Statement_Assignment(instructions, statementAST, variables)
     elif isinstance(statementAST, ReturnStmtAST):
-        transformStatementToIR_Return(statementAST, block, variables)
+        insertInstr_Statement_Return(instructions, statementAST, variables)
 
-def transformStatementToIR_Block(blockAST, block, variables):
+def insertInstr_Statement_Block(instructions, blockAST, variables):
     for statement in blockAST.statements:
-        transformStatementToIR(statement, block, variables)
+        insertInstr_Statement(instructions, statement, variables)
 
-def transformStatementToIR_Assignment(assignmnentAST, block, variables):
-    result = transformExpressionToIR(assignmnentAST.expression, block, variables)
-    block.append(MoveInstrIR(variables[assignmnentAST.target], result))
+def insertInstr_Statement_Assignment(instructions, assignmnentAST, variables):
+    result = insertInstr_Expression(instructions, assignmnentAST.expression, variables)
+    instructions.append(MoveInstrIR(variables[assignmnentAST.target], result))
 
-def transformStatementToIR_Return(returnAST, block, variables):
-    result = transformExpressionToIR(returnAST.expression, block, variables)
-    block.append(ReturnInstrIR(result))
+def insertInstr_Statement_Return(instructions, returnAST, variables):
+    result = insertInstr_Expression(instructions, returnAST.expression, variables)
+    instructions.append(ReturnInstrIR(result))
 
-def transformExpressionToIR(expr, block, variables):
+def insertInstr_Expression(instructions, expr, variables):
     if isinstance(expr, AddSubExprAST):
-        return transformExpressionToIR_AddSub(expr, block, variables)
+        return insertInstr_Expression_AddSub(instructions, expr, variables)
     elif isinstance(expr, MulDivExprAST):
-        return transformExpressionToIR_MulDiv(expr, block, variables)
+        return insertInstr_Expression_MulDiv(instructions, expr, variables)
     elif isinstance(expr, ConstIntAST):
-        return transformExpressionToIR_ConstInt(expr, block)
+        return insertInstr_Expression_ConstInt(instructions, expr)
     elif isinstance(expr, VariableAST):
-        return transformExpressionToIR_Variable(expr, block, variables)
+        return insertInstr_Expression_Variable(instructions, expr, variables)
         
-def transformExpressionToIR_AddSub(expression, block, variables):
+def insertInstr_Expression_AddSub(instructions, expression, variables):
     result = VirtualRegister()
-    block.append(InitializeInstrIR(result, 0))
+    instructions.append(InitializeInstrIR(result, 0))
     for term in expression.terms:
-        reg = transformExpressionToIR(term.expr, block, variables)
+        reg = insertInstr_Expression(instructions, term.expr, variables)
         instr = TwoOpInstrIR(term.operation, result, result, reg)
-        block.append(instr)
+        instructions.append(instr)
     return result
 
-def transformExpressionToIR_MulDiv(expression, block, variables):
+def insertInstr_Expression_MulDiv(instructions, expression, variables):
     result = VirtualRegister()
-    block.append(InitializeInstrIR(result, 1))
+    instructions.append(InitializeInstrIR(result, 1))
     for term in expression.terms:
-        reg = transformExpressionToIR(term.expr, block, variables)
+        reg = insertInstr_Expression(instructions, term.expr, variables)
         instr = TwoOpInstrIR(term.operation, result, result, reg)
-        block.append(instr)
+        instructions.append(instr)
     return result
 
-def transformExpressionToIR_ConstInt(intAST, block):
+def insertInstr_Expression_ConstInt(instructions, intAST):
     result = VirtualRegister()
-    block.append(InitializeInstrIR(result, intAST.value))
+    instructions.append(InitializeInstrIR(result, intAST.value))
     return result
         
-def transformExpressionToIR_Variable(variableAST, block, variables):
+def insertInstr_Expression_Variable(instructions, variableAST, variables):
     return variables[variableAST.name]
