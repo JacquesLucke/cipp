@@ -7,7 +7,8 @@ from x64assembler.registers import allRegisters
 from x64assembler.instructions import (
     AddImmToRegInstr, MovRegToRegInstr, RetInstr, 
     PushRegInstr, PopRegInstr, SyscallInstr, 
-    MovImmToRegInstr, PushImmInstr, AddRegToRegInstr, JmpInstr
+    MovImmToRegInstr, PushImmInstr, AddRegToRegInstr, 
+    JmpInstr, JmpNotZeroInstr, CompareInstr
 )
 
 globals().update(allRegisters)
@@ -61,22 +62,11 @@ instructions3 = [
 ]
 
 instructions4 = [
-    JmpInstr("Case 1"),
-    MovImmToRegInstr(rax, 10),
-    JmpInstr("End"),
-    MovImmToRegInstr(rax, 20),
-    JmpInstr("End"),
-    AddImmToRegInstr(rax, 5),
-    AddImmToRegInstr(rax, 6),
+    MovImmToRegInstr(rax, 42),
     RetInstr()
 ]
-labels4 = {
-    "Case 1" : instructions4[1],
-    "Case 2" : instructions4[3],
-    "End" : instructions4[6]
-}
 
-block = Block(instructions4, labels4)
+block = Block(instructions2)
 print(block.toIntelSyntax())
 print(block.toMachineCode())
 print(block.toMachineCode().toCArrayInitializer())
@@ -84,7 +74,7 @@ print(block.toMachineCode().toCArrayInitializer())
 # sys.exit()
 
 from ctypes import c_int, CFUNCTYPE
-functype = CFUNCTYPE(c_int)
+functype = CFUNCTYPE(c_int, c_int, c_int, c_int)
 func = createFunctionFromHex(functype, block.toMachineCode().toHex())
-result = func()
+result = func(5, 6, 7)
 print(result)
