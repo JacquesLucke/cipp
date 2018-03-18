@@ -27,6 +27,19 @@ class JmpNotZeroInstr(Instruction):
     def getLinks(self):
         return [JumpRelative32(self.label, startByte = 2)]
 
+class JmpZeroInstr(Instruction):
+    def __init__(self, label):
+        self.label = label
+
+    def toMachineCode(self):
+        return Bits.fromHex("0f84") + Bits.zeros(32)
+
+    def toIntelSyntax(self):
+        return f"jz {self.label}"
+
+    def getLinks(self):
+        return [JumpRelative32(self.label, startByte = 2)]
+
 class JumpRelative32:
     def __init__(self, label, startByte):
         self.label = label

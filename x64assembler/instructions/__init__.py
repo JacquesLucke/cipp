@@ -10,7 +10,7 @@ from . pop_reg import PopRegInstr
 from . ret import RetInstr
 
 from . jumps import (
-    JmpInstr, JmpNotZeroInstr
+    JmpInstr, JmpNotZeroInstr, JmpZeroInstr
 )
 
 from . simple_two_reg import (
