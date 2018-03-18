@@ -67,7 +67,26 @@ class Label:
     
     def __repr__(self):
         return f"<IR Label: {self.name}>"
+
+class VirtualRegister:
+    uniqueNumberCounter = 0
+
+    def __init__(self):
+        self._name = self.newUniqueName()
+
+    @property
+    def name(self):
+        return self._name
+
+    def __repr__(self):
+        return self.name
+
+    @classmethod
+    def newUniqueName(cls):
+        cls.uniqueNumberCounter += 1
+        return f"#{cls.uniqueNumberCounter}"
     
+
 
 class Instruction:
     def getVRegisters(self):
@@ -148,20 +167,3 @@ class GotoIfZero(Instruction):
 
     def __repr__(self):
         return f"if {self.vreg} == 0: goto {self.label.name}"
-
-class VirtualRegister:
-    def __init__(self):
-        self._name = newUniqueName()
-
-    @property
-    def name(self):
-        return self._name
-
-    def __repr__(self):
-        return self.name
-
-uniqueNameCounter = 0
-def newUniqueName():
-    global uniqueNameCounter
-    uniqueNameCounter += 1
-    return f"#{uniqueNameCounter}"
