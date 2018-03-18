@@ -164,6 +164,8 @@ def parseComparisonOperator(tokens):
         acceptLetter(tokens, "!")
         acceptLetter(tokens, "=")
         return "!="
+    else:
+        raise Exception("unknown comparison operator")
 
 def parseExpression_AddSubLevel(tokens):
     terms = []
