@@ -40,13 +40,15 @@ class GeneralPurposeRegister(Register):
 slice64Bit = RegisterSpaceSlice(0, 63)
 slice32Bit = RegisterSpaceSlice(0, 31)
 slice16Bit = RegisterSpaceSlice(0, 15)
+sliceLower8Bit = RegisterSpaceSlice(0, 7)
 
 def buildGPRegisterType1(id, letter):
     space = RegisterSpace(64)
     return (
         GeneralPurposeRegister(f"r{letter}x", id, space, slice64Bit),
         GeneralPurposeRegister(f"e{letter}x", id, space, slice32Bit),
-        GeneralPurposeRegister(f"{letter}x", id, space, slice16Bit)
+        GeneralPurposeRegister(f"{letter}x", id, space, slice16Bit),
+        GeneralPurposeRegister(f"{letter}l", id, space, sliceLower8Bit)
     )
 
 def buildGPRegisterType2(id, letters):
@@ -67,10 +69,10 @@ def buildGPRegisterType3(id):
 
 beforeCreation = set(globals().keys())
 
-rax, eax, ax = buildGPRegisterType1(0, "a")
-rbx, ebx, bx = buildGPRegisterType1(3, "b")
-rcx, ecx, cx = buildGPRegisterType1(1, "c")
-rdx, edx, dx = buildGPRegisterType1(2, "d")
+rax, eax, ax, al = buildGPRegisterType1(0, "a")
+rbx, ebx, bx, bl = buildGPRegisterType1(3, "b")
+rcx, ecx, cx, cl = buildGPRegisterType1(1, "c")
+rdx, edx, dx, dl = buildGPRegisterType1(2, "d")
 
 rsp, esp, sp = buildGPRegisterType2(4, "sp")
 rbp, ebp, bp = buildGPRegisterType2(5, "bp")
