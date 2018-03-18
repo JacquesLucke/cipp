@@ -22,6 +22,10 @@ from . simple_two_reg import (
     AddRegToRegInstr, SubRegFromRegInstr
 )
 
+from . set_byte_on_condition import (
+    SetIfNotEqualInstr, SetIfGreaterInstr
+)
+
 globals().update(allRegisters)
 
 class TestInstruction(unittest.TestCase):
@@ -296,4 +300,22 @@ class TestSubRegFromRegInstruction(TestInstruction):
         ([r11w, r14w], "664529f3", "sub r11w, r14w"),
         ([r12w, bp], "664129ec", "sub r12w, bp"),
         ([sp, r8w], "664429c4", "sub sp, r8w")
+    ]
+
+class TestSetIfNotEqualInstruction(TestInstruction):
+    instruction = SetIfNotEqualInstr
+    simpleTestCases = [
+        ([al], "0f95c0", "setne al"),
+        ([bl], "0f95c3", "setne bl"),
+        ([cl], "0f95c1", "setne cl"),
+        ([dl], "0f95c2", "setne dl")
+    ]
+
+class TestSetIfGreaterInstruction(TestInstruction):
+    instruction = SetIfGreaterInstr
+    simpleTestCases = [
+        ([al], "0f9fc0", "setg al"),
+        ([bl], "0f9fc3", "setg bl"),
+        ([cl], "0f9fc1", "setg cl"),
+        ([dl], "0f9fc2", "setg dl")
     ]
