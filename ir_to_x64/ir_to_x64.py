@@ -1,23 +1,26 @@
 from x64assembler.instructions import (
     AddRegToRegInstr, MovImmToRegInstr, MovMemToRegInstr, MovRegToMemInstr,
-    RetInstr, AddImmToRegInstr, SubRegFromRegInstr
+    RetInstr, AddImmToRegInstr, SubRegFromRegInstr,
+    JmpInstr, JmpZeroInstr, CompareInstr
 )
 
 from x64assembler.block import Block
 from x64assembler.registers import allRegisters
 
 from . ir import (
-    InitializeInstrIR, MoveInstrIR, ReturnInstrIR, TwoOpInstrIR
+    InitializeInstrIR, MoveInstrIR, ReturnInstrIR, TwoOpInstrIR,
+    GotoInstrIR, GotoIfZeroIR
 )
 
 globals().update(allRegisters)
 
 def compileToX64(functionIR):
-    instructions = list(compileFunction(functionIR))
-    block = Block(instructions)
+    labels = {}
+    instructions = list(compileFunction(functionIR, labels))
+    block = Block(instructions, labels)
     return block
 
-def compileFunction(functionIR):
+def compileFunction(functionIR, labels):
     vregOffsets = {}
     for i, reg in enumerate(functionIR.getUsedVRegisters()):
         vregOffsets[reg] = i * 8
@@ -28,10 +31,14 @@ def compileFunction(functionIR):
     #for reg, vreg in zip([rdi, rsi, rdx, rcx, r8, r9], functionIR.arguments): # linux
         yield storeVirtualRegister(reg, vreg, vregOffsets)
 
-    for instr in functionIR.instructions:
-        yield from compileInstruction(instr, vregOffsets)
+    labelByIndex = functionIR.instructions.getLabelsByIndex()
+    for i, instr in enumerate(functionIR.instructions):
+        x86Instrs = list(compileInstruction(instr, vregOffsets, labels))
+        if i in labelByIndex:
+            labels[labelByIndex[i]] = x86Instrs[0] 
+        yield from x86Instrs
 
-def compileInstruction(instr, vregOffsets):
+def compileInstruction(instr, vregOffsets, labels):
     if isinstance(instr, InitializeInstrIR):
         yield MovImmToRegInstr(rax, instr.value)
         yield storeVirtualRegister(rax, instr.vreg, vregOffsets)
@@ -49,6 +56,13 @@ def compileInstruction(instr, vregOffsets):
     elif isinstance(instr, ReturnInstrIR):
         yield loadVirtualRegister(rax, instr.vreg, vregOffsets)
         yield from clearStackAndReturn(vregOffsets)
+    elif isinstance(instr, GotoInstrIR):
+        yield JmpInstr(instr.label)
+    elif isinstance(instr, GotoIfZeroIR):
+        yield MovImmToRegInstr(rax, 0)
+        yield loadVirtualRegister(rcx, instr.vreg, vregOffsets)
+        yield CompareInstr(rax, rcx)
+        yield JmpZeroInstr(instr.label)
 
 def changeStackPointer(byteAmount):
     return AddImmToRegInstr(rsp, byteAmount)

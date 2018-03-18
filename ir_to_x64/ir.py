@@ -6,28 +6,62 @@ class FunctionIR:
     def __init__(self, name):
         self.name = name
         self.arguments = []
-        self.instructions = []
+        self.instructions = InstructionListIR()
 
     def addArgument(self):
         reg = VirtualRegister()
         self.arguments.append(reg)
         return reg
     
-    def addInstruction(self, instruction):
-        self.instructions.append(instruction)
-    
     def getUsedVRegisters(self):
         registers = set()
         registers.update(self.arguments)
-        registers.update(self.iterVRegistersInInstructions())
+        registers.update(self.instructions.iterUsedVRegisters())
         return registers
 
-    def iterVRegistersInInstructions(self):
+    def __repr__(self):
+        return f"{self.name} ({', '.join(map(str, self.arguments))})\n{self.instructions}"
+
+class InstructionListIR:
+    def __init__(self):
+        self.instructions = []
+        self.labels = {}
+
+    def add(self, instruction):
+        self.instructions.append(instruction)
+
+    def newLabel(self, prefix):
+        i = 0
+        while True:
+            i += 1
+            label = f"{prefix}_{i}"
+            if label not in self.labels:
+                break
+        self.labels[label] = None
+        return label
+
+    def insertLabelAfterCurrentInstruction(self, label):
+        self.labels[label] = len(self.instructions)
+
+    def iterUsedVRegisters(self):
         for instr in self.instructions:
             yield from instr.getVRegisters()
 
+    def __iter__(self):
+        return iter(self.instructions)
+
     def __repr__(self):
-        return "\n".join(map(str, self.instructions))
+        return "\n".join(self._iterReprLines())
+
+    def _iterReprLines(self):
+        labelByIndex = self.getLabelsByIndex()
+        for i, instr in enumerate(self.instructions):
+            if i in labelByIndex:
+                yield f"{labelByIndex[i]}:"
+            yield str(instr)
+
+    def getLabelsByIndex(self):
+        return {i : label for label, i in self.labels.items()}
     
 
 class InstructionIR:
@@ -78,6 +112,24 @@ class ReturnInstrIR(InstructionIR):
 
     def __repr__(self):
         return f"return {self.vreg}"
+
+class GotoInstrIR(InstructionIR):
+    def __init__(self, label):
+        self.label = label
+
+    def __repr__(self):
+        return f"goto {self.label}"
+
+class GotoIfZeroIR(InstructionIR):
+    def __init__(self, vreg, label):
+        self.vreg = vreg
+        self.label = label
+
+    def getVRegisters(self):
+        return [self.vreg]
+
+    def __repr__(self):
+        return f"if {self.vreg} == 0: goto {self.label}"
 
 class VirtualRegister:
     def __init__(self):

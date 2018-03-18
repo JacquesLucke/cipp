@@ -1,10 +1,12 @@
 from cipp_parser.parser import (
     ProgramAST, AssignmentStmtAST, AddSubExprAST, ConstIntAST,
-    VariableAST, MulDivExprAST, ReturnStmtAST, BlockStmtAST
+    VariableAST, MulDivExprAST, ReturnStmtAST, BlockStmtAST,
+    WhileStmtAST
 )
 from ir_to_x64.ir import (
     ModuleIR, FunctionIR, VirtualRegister,
-    InitializeInstrIR, TwoOpInstrIR, MoveInstrIR, ReturnInstrIR
+    InitializeInstrIR, TwoOpInstrIR, MoveInstrIR, ReturnInstrIR,
+    GotoIfZeroIR, GotoInstrIR
 )
 
 def transformProgramToIR(programAST):
@@ -18,11 +20,7 @@ def transformFunctionToIR(functionAST):
     for argument in functionAST.arguments:
         variables[argument.name] = functionIR.addArgument()
 
-    instructions = []
-    insertInstr_Statement(instructions, functionAST.statement, variables)
-
-    for instr in instructions:
-        functionIR.addInstruction(instr)
+    insertInstr_Statement(functionIR.instructions, functionAST.statement, variables)
 
     return functionIR
 
@@ -33,6 +31,8 @@ def insertInstr_Statement(instructions, statementAST, variables):
         insertInstr_Statement_Assignment(instructions, statementAST, variables)
     elif isinstance(statementAST, ReturnStmtAST):
         insertInstr_Statement_Return(instructions, statementAST, variables)
+    elif isinstance(statementAST, WhileStmtAST):
+        insertInstr_Statement_While(instructions, statementAST, variables)
 
 def insertInstr_Statement_Block(instructions, blockAST, variables):
     for statement in blockAST.statements:
@@ -40,11 +40,23 @@ def insertInstr_Statement_Block(instructions, blockAST, variables):
 
 def insertInstr_Statement_Assignment(instructions, assignmnentAST, variables):
     result = insertInstr_Expression(instructions, assignmnentAST.expression, variables)
-    instructions.append(MoveInstrIR(variables[assignmnentAST.target], result))
+    instructions.add(MoveInstrIR(variables[assignmnentAST.target], result))
 
 def insertInstr_Statement_Return(instructions, returnAST, variables):
     result = insertInstr_Expression(instructions, returnAST.expression, variables)
-    instructions.append(ReturnInstrIR(result))
+    instructions.add(ReturnInstrIR(result))
+
+def insertInstr_Statement_While(instructions, whileAST, variables):
+    startLabel = instructions.newLabel("while_start")
+    afterLabel = instructions.newLabel("while_after")
+    instructions.insertLabelAfterCurrentInstruction(startLabel)
+
+    condResult = insertInstr_Expression(instructions, whileAST.condition, variables)
+    instructions.add(GotoIfZeroIR(condResult, afterLabel))
+    insertInstr_Statement(instructions, whileAST.statement, variables)
+    instructions.add(GotoInstrIR(startLabel))
+
+    instructions.insertLabelAfterCurrentInstruction(afterLabel)
 
 def insertInstr_Expression(instructions, expr, variables):
     if isinstance(expr, AddSubExprAST):
@@ -58,25 +70,25 @@ def insertInstr_Expression(instructions, expr, variables):
         
 def insertInstr_Expression_AddSub(instructions, expression, variables):
     result = VirtualRegister()
-    instructions.append(InitializeInstrIR(result, 0))
+    instructions.add(InitializeInstrIR(result, 0))
     for term in expression.terms:
         reg = insertInstr_Expression(instructions, term.expr, variables)
         instr = TwoOpInstrIR(term.operation, result, result, reg)
-        instructions.append(instr)
+        instructions.add(instr)
     return result
 
 def insertInstr_Expression_MulDiv(instructions, expression, variables):
     result = VirtualRegister()
-    instructions.append(InitializeInstrIR(result, 1))
+    instructions.add(InitializeInstrIR(result, 1))
     for term in expression.terms:
         reg = insertInstr_Expression(instructions, term.expr, variables)
         instr = TwoOpInstrIR(term.operation, result, result, reg)
-        instructions.append(instr)
+        instructions.add(instr)
     return result
 
 def insertInstr_Expression_ConstInt(instructions, intAST):
     result = VirtualRegister()
-    instructions.append(InitializeInstrIR(result, intAST.value))
+    instructions.add(InitializeInstrIR(result, intAST.value))
     return result
         
 def insertInstr_Expression_Variable(instructions, variableAST, variables):
