@@ -141,8 +141,9 @@ def parseExpression_ComparisonLevel(tokens):
     else:
         return expressionLeft
 
+comparisonOperators = ("==", "<=", ">=", "!=", "<", ">")
 def parseComparisonOperator(tokens):
-    for operator in ("==", "<=", ">=", "!=", "<", ">"):
+    for operator in comparisonOperators:
         if nextLettersAre(tokens, operator):
             acceptLetters(tokens, operator)
             return operator
@@ -302,4 +303,4 @@ def nextIsInteger(tokens):
     return isinstance(tokens.peekNext(), IntegerToken)
 
 def nextIsComparisonOperator(tokens):
-    return nextIsOneOfLetters(tokens, "<", ">", "=", "!")
+    return any(nextLettersAre(tokens, s) for s in comparisonOperators)
