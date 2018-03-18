@@ -1,5 +1,5 @@
 from .. bits import Bits
-from . instruction import Instruction
+from .. block import Instruction
 
 class RetInstr(Instruction):
     def __new__(self, popAmount = 0):

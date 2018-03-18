@@ -20,76 +20,76 @@ def transformFunctionToIR(functionAST):
     for argument in functionAST.arguments:
         variables[argument.name] = functionIR.addArgument()
 
-    insertInstr_Statement(functionIR.instructions, functionAST.statement, variables)
+    insertInstr_Statement(functionIR.block, functionAST.statement, variables)
 
     return functionIR
 
-def insertInstr_Statement(instructions, statementAST, variables):
+def insertInstr_Statement(block, statementAST, variables):
     if isinstance(statementAST, BlockStmtAST):
-        insertInstr_Statement_Block(instructions, statementAST, variables)
+        insertInstr_Statement_Block(block, statementAST, variables)
     elif isinstance(statementAST, AssignmentStmtAST):
-        insertInstr_Statement_Assignment(instructions, statementAST, variables)
+        insertInstr_Statement_Assignment(block, statementAST, variables)
     elif isinstance(statementAST, ReturnStmtAST):
-        insertInstr_Statement_Return(instructions, statementAST, variables)
+        insertInstr_Statement_Return(block, statementAST, variables)
     elif isinstance(statementAST, WhileStmtAST):
-        insertInstr_Statement_While(instructions, statementAST, variables)
+        insertInstr_Statement_While(block, statementAST, variables)
 
-def insertInstr_Statement_Block(instructions, blockAST, variables):
+def insertInstr_Statement_Block(block, blockAST, variables):
     for statement in blockAST.statements:
-        insertInstr_Statement(instructions, statement, variables)
+        insertInstr_Statement(block, statement, variables)
 
-def insertInstr_Statement_Assignment(instructions, assignmnentAST, variables):
-    result = insertInstr_Expression(instructions, assignmnentAST.expression, variables)
-    instructions.add(MoveInstrIR(variables[assignmnentAST.target], result))
+def insertInstr_Statement_Assignment(block, assignmnentAST, variables):
+    result = insertInstr_Expression(block, assignmnentAST.expression, variables)
+    block.add(MoveInstrIR(variables[assignmnentAST.target], result))
 
-def insertInstr_Statement_Return(instructions, returnAST, variables):
-    result = insertInstr_Expression(instructions, returnAST.expression, variables)
-    instructions.add(ReturnInstrIR(result))
+def insertInstr_Statement_Return(block, returnAST, variables):
+    result = insertInstr_Expression(block, returnAST.expression, variables)
+    block.add(ReturnInstrIR(result))
 
-def insertInstr_Statement_While(instructions, whileAST, variables):
-    startLabel = instructions.newLabel("while_start")
-    afterLabel = instructions.newLabel("while_after")
-    instructions.insertLabelAfterCurrentInstruction(startLabel)
+def insertInstr_Statement_While(block, whileAST, variables):
+    startLabel = block.newLabel("while_start")
+    afterLabel = block.newLabel("while_after")
+    block.add(startLabel)
 
-    condResult = insertInstr_Expression(instructions, whileAST.condition, variables)
-    instructions.add(GotoIfZeroIR(condResult, afterLabel))
-    insertInstr_Statement(instructions, whileAST.statement, variables)
-    instructions.add(GotoInstrIR(startLabel))
+    condResult = insertInstr_Expression(block, whileAST.condition, variables)
+    block.add(GotoIfZeroIR(condResult, afterLabel))
+    insertInstr_Statement(block, whileAST.statement, variables)
+    block.add(GotoInstrIR(startLabel))
 
-    instructions.insertLabelAfterCurrentInstruction(afterLabel)
+    block.add(afterLabel)
 
-def insertInstr_Expression(instructions, expr, variables):
+def insertInstr_Expression(block, expr, variables):
     if isinstance(expr, AddSubExprAST):
-        return insertInstr_Expression_AddSub(instructions, expr, variables)
+        return insertInstr_Expression_AddSub(block, expr, variables)
     elif isinstance(expr, MulDivExprAST):
-        return insertInstr_Expression_MulDiv(instructions, expr, variables)
+        return insertInstr_Expression_MulDiv(block, expr, variables)
     elif isinstance(expr, ConstIntAST):
-        return insertInstr_Expression_ConstInt(instructions, expr)
+        return insertInstr_Expression_ConstInt(block, expr)
     elif isinstance(expr, VariableAST):
-        return insertInstr_Expression_Variable(instructions, expr, variables)
+        return insertInstr_Expression_Variable(block, expr, variables)
         
-def insertInstr_Expression_AddSub(instructions, expression, variables):
+def insertInstr_Expression_AddSub(block, expression, variables):
     result = VirtualRegister()
-    instructions.add(InitializeInstrIR(result, 0))
+    block.add(InitializeInstrIR(result, 0))
     for term in expression.terms:
-        reg = insertInstr_Expression(instructions, term.expr, variables)
+        reg = insertInstr_Expression(block, term.expr, variables)
         instr = TwoOpInstrIR(term.operation, result, result, reg)
-        instructions.add(instr)
+        block.add(instr)
     return result
 
-def insertInstr_Expression_MulDiv(instructions, expression, variables):
+def insertInstr_Expression_MulDiv(block, expression, variables):
     result = VirtualRegister()
-    instructions.add(InitializeInstrIR(result, 1))
+    block.add(InitializeInstrIR(result, 1))
     for term in expression.terms:
-        reg = insertInstr_Expression(instructions, term.expr, variables)
+        reg = insertInstr_Expression(block, term.expr, variables)
         instr = TwoOpInstrIR(term.operation, result, result, reg)
-        instructions.add(instr)
+        block.add(instr)
     return result
 
-def insertInstr_Expression_ConstInt(instructions, intAST):
+def insertInstr_Expression_ConstInt(block, intAST):
     result = VirtualRegister()
-    instructions.add(InitializeInstrIR(result, intAST.value))
+    block.add(InitializeInstrIR(result, intAST.value))
     return result
         
-def insertInstr_Expression_Variable(instructions, variableAST, variables):
+def insertInstr_Expression_Variable(block, variableAST, variables):
     return variables[variableAST.name]

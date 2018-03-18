@@ -1,5 +1,5 @@
 from .. bits import Bits
-from . instruction import Instruction
+from .. block import Instruction
 
 class PushImmInstr(Instruction):
     def __init__(self, value):

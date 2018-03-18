@@ -1,5 +1,5 @@
 from .. bits import Bits
-from . instruction import Instruction
+from .. block import Instruction
 
 class JmpInstr(Instruction):
     def __init__(self, label):
@@ -42,6 +42,7 @@ class JmpZeroInstr(Instruction):
 
 class JumpRelative32:
     def __init__(self, label, startByte):
+        assert isinstance(label, str)
         self.label = label
         self.startByte = startByte
 

@@ -1,6 +1,6 @@
 from .. bits import Bits
 from .. registers import rax, eax, ax
-from . instruction import Instruction
+from .. block import Instruction
 from . utils import getImmSize
 
 class AddImmToRegInstr(Instruction):

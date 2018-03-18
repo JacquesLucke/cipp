@@ -1,5 +1,5 @@
 from .. bits import Bits
-from . instruction import Instruction
+from .. block import Instruction
 from . utils import getRegGroupPrefix_64, getRegGroupPrefix_32
 
 class SimpleTwoRegInstr(Instruction):

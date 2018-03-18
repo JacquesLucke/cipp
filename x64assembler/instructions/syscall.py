@@ -1,5 +1,5 @@
 from .. bits import Bits
-from . instruction import Instruction
+from .. block import Instruction
 
 class SyscallInstr(Instruction):
     def toIntelSyntax(self):

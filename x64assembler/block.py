@@ -1,42 +1,66 @@
 from . bits import Bits
 
+class AssemblyElement:
+    def toIntelSyntax(self):
+        raise NotImplementedError()
+
+    def __repr__(self):
+        return self.toIntelSyntax()
+
+class Label(AssemblyElement):
+    def __init__(self, name):
+        self.name = name
+
+    def toIntelSyntax(self):
+        return f"{self.name}:"
+
+    def __repr__(self):
+        return f"<Label: {self.name}>"
+
+class Instruction(AssemblyElement):
+    def toMachineCode(self):
+        raise NotImplementedError()
+
+    def getLinks(self):
+        return []
+
 class Block:
-    def __init__(self, instructions = [], labels = {}):
-        self.instructions = instructions
-        self.instructionByLabel = labels
-        self.labelByInstruction = {instr : label for label, instr in labels.items()}
+    def __init__(self, elements):
+        self.elements = elements
 
     def toIntelSyntax(self):
         return "\n".join(self._iterIntelSyntaxLines())
 
     def _iterIntelSyntaxLines(self):
-        for instr in self.instructions:
-            if instr in self.labelByInstruction:
-                yield f"{self.labelByInstruction[instr]}:"
-            yield str(instr)
+        yield from map(str, self.elements)
 
     def toMachineCode(self):
         position = 0
-        positionByInstruction = {}
+        positionByLabel = {}
         machineCodes = []
 
-        for instruction in self.instructions:
-            positionByInstruction[instruction] = position
-            machineCode = instruction.toMachineCode()
-            machineCodes.append(machineCode)
-            position += machineCode.byteLength
-
+        for element in self.elements:
+            if isinstance(element, Label):
+                label = element.name
+                if label in positionByLabel:
+                    raise Exception(f"Label found twice: {label}")
+                else:
+                    positionByLabel[element.name] = position
+            elif isinstance(element, Instruction):
+                machineCode = element.toMachineCode()
+                machineCodes.append((element, position, machineCode))
+                position += machineCode.byteLength
+                
         resultParts = []
 
-        for instruction, machineCode in zip(self.instructions, machineCodes):
-            positionOfNextInstr = positionByInstruction[instruction] + machineCode.byteLength
+        for instruction, ownPosition, machineCode in machineCodes:
+            positionOfNextInstr = ownPosition + machineCode.byteLength
 
             for link in instruction.getLinks():
-                if link.label not in self.instructionByLabel:
+                if link.label not in positionByLabel:
                     raise Exception(f"cannot find label: {link.label}")
 
-                linkedInstruction = self.instructionByLabel[link.label]
-                linkedPosition = positionByInstruction[linkedInstruction]
+                linkedPosition = positionByLabel[link.label]
                 offset = linkedPosition - positionOfNextInstr
                 machineCode = link.insertOffset(machineCode, offset)
             

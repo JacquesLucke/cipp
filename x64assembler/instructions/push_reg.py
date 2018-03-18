@@ -1,5 +1,5 @@
 from .. bits import Bits
-from . instruction import Instruction
+from .. block import Instruction
 
 class PushRegInstr(Instruction):
     def __init__(self, reg):

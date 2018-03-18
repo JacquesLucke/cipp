@@ -1,6 +1,6 @@
 from .. bits import Bits
 from . utils import getImmSize
-from . instruction import Instruction
+from .. block import Instruction
 
 class MovImmToRegInstr(Instruction):
     def __init__(self, reg, value):
