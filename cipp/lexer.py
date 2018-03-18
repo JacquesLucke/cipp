@@ -17,6 +17,32 @@ class Lexer:
     def isTokenIgnored(self, token):
         return type(token) in self.ignoredTokenTypes
 
+
+class Token:
+    @classmethod
+    def startswith(cls, char):
+        raise NotImplementedError()
+
+    def __init__(self, firstChar):
+        pass
+
+    def checkNext(self, char):
+        '''return CharState'''
+        raise NotImplementedError()
+
+    def isFinished(self):
+        return True
+
+    def __repr__(self):
+        return f"<{type(self).__name__}>"
+    
+
+class CharState:
+    CONSUMED = 1
+    NOT_CONSUMED = 2
+    INVALID = 3
+
+
 class TokenIterator:
     def __init__(self, lexer, charIterator):
         self.lexer = lexer
@@ -60,27 +86,3 @@ class TokenIterator:
             return token
         else:
             raise Exception("could not finish token")
-
-class CharState:
-    CONSUMED = 1
-    NOT_CONSUMED = 2
-    INVALID = 3
-
-class Token:
-    @classmethod
-    def startswith(cls, char):
-        raise NotImplementedError()
-
-    def __init__(self, firstChar):
-        pass
-
-    def checkNext(self, char):
-        '''return CharState'''
-        raise NotImplementedError()
-
-    def isFinished(self):
-        return True
-
-    def __repr__(self):
-        return f"<{type(self).__name__}>"
-    

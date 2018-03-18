@@ -1,4 +1,4 @@
-from . parser import (
+from . ast import (
     ProgramAST, AssignmentStmtAST, AddSubExprAST, ConstIntAST,
     VariableAST, MulDivExprAST, ReturnStmtAST, BlockStmtAST,
     WhileStmtAST, IfStmtAST, IfElseStmtAST, ComparisonExprAST

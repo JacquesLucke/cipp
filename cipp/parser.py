@@ -1,3 +1,4 @@
+from . import ast
 from . lexer import Lexer
 from . token_stream import TokenStream
 
@@ -26,7 +27,7 @@ def parseProgram(tokens):
     while nextIsKeyword(tokens, "def"):
         function = parseFunction(tokens)
         functions.append(function)
-    return ProgramAST(functions)
+    return ast.ProgramAST(functions)
 
 def parseFunction(tokens):
     acceptKeyword(tokens, "def")
@@ -35,7 +36,7 @@ def parseFunction(tokens):
     name = acceptIdentifier(tokens)
     arguments = parseArguments(tokens)
     statement = parseStatement(tokens)
-    return FunctionAST(name, retType, arguments, statement)
+    return ast.FunctionAST(name, retType, arguments, statement)
 
 def parseArguments(tokens):
     acceptLetter(tokens, "(")
@@ -58,11 +59,11 @@ def parseArguments(tokens):
 def parseArgument(tokens):
     dataType = parseType(tokens)
     name = acceptIdentifier(tokens)
-    return ArgumentAST(name, dataType)
+    return ast.ArgumentAST(name, dataType)
 
 def parseType(tokens):
     dataType = acceptIdentifier(tokens)
-    return TypeAST(dataType)
+    return ast.TypeAST(dataType)
 
 def parseStatement(tokens):
     if nextIsLetter(tokens, "{"):
@@ -91,13 +92,13 @@ def parseStatement_Block(tokens, a = 0):
     if len(statements) == 1:
         return statements[0]
     else:
-        return BlockStmtAST(statements)
+        return ast.BlockStmtAST(statements)
 
 def parseStatement_Return(tokens):
     acceptKeyword(tokens, "return")
     expression = parseExpression(tokens)
     acceptLetter(tokens, ";")
-    return ReturnStmtAST(expression)
+    return ast.ReturnStmtAST(expression)
 
 def parseStatement_Let(tokens):
     acceptKeyword(tokens, "let")
@@ -106,7 +107,7 @@ def parseStatement_Let(tokens):
     acceptLetter(tokens, "=")
     expression = parseExpression(tokens)
     acceptLetter(tokens, ";")
-    return LetStmtAST(name, dataType, expression)
+    return ast.LetStmtAST(name, dataType, expression)
 
 def parseStatement_Assignment(tokens):
     targetName = acceptIdentifier(tokens)
@@ -117,12 +118,12 @@ def parseStatement_Assignment(tokens):
         acceptLetter(tokens, "=")
         expression = parseExpression(tokens)
         acceptLetter(tokens, ";")
-        return ArrayAssignmentStmtAST(targetName, offset, expression)
+        return ast.ArrayAssignmentStmtAST(targetName, offset, expression)
     else:
         acceptLetter(tokens, "=")
         expression = parseExpression(tokens)
         acceptLetter(tokens, ";")
-        return AssignmentStmtAST(targetName, expression)
+        return ast.AssignmentStmtAST(targetName, expression)
 
 def parseStatement_While(tokens):
     acceptKeyword(tokens, "while")
@@ -130,7 +131,7 @@ def parseStatement_While(tokens):
     condition = parseExpression(tokens)
     acceptLetter(tokens, ")")
     statement = parseStatement(tokens)
-    return WhileStmtAST(condition, statement)
+    return ast.WhileStmtAST(condition, statement)
 
 def parseStatement_If(tokens):
     acceptKeyword(tokens, "if")
@@ -141,9 +142,9 @@ def parseStatement_If(tokens):
     if nextIsKeyword(tokens, "else"):
         acceptKeyword(tokens, "else")
         elseStatement = parseStatement(tokens)
-        return IfElseStmtAST(condition, thenStatement, elseStatement)
+        return ast.IfElseStmtAST(condition, thenStatement, elseStatement)
     else:
-        return IfStmtAST(condition, thenStatement)
+        return ast.IfStmtAST(condition, thenStatement)
 
 def parseExpression(tokens):
     '''
@@ -157,7 +158,7 @@ def parseExpression_ComparisonLevel(tokens):
     if nextIsComparisonOperator(tokens):
         operator = parseComparisonOperator(tokens)
         expressionRight = parseExpression_AddSubLevel(tokens)
-        return ComparisonExprAST(operator, expressionLeft, expressionRight)
+        return ast.ComparisonExprAST(operator, expressionLeft, expressionRight)
     else:
         return expressionLeft
 
@@ -189,51 +190,51 @@ def parseExpression_AddSubLevel(tokens):
     terms = []
 
     term = parseExpression_MulDivLevel(tokens)
-    terms.append(AddedTerm(term))
+    terms.append(ast.AddedTerm(term))
 
     while nextIsOneOfLetters(tokens, "+", "-"):
         if nextIsLetter(tokens, "+"):
             acceptLetter(tokens, "+")
             term = parseExpression_MulDivLevel(tokens)
-            terms.append(AddedTerm(term))
+            terms.append(ast.AddedTerm(term))
         elif nextIsLetter(tokens, "-"):
             acceptLetter(tokens, "-")
             term = parseExpression_MulDivLevel(tokens)
-            terms.append(SubtractedTerm(term))
+            terms.append(ast.SubtractedTerm(term))
 
-    if len(terms) == 1 and isinstance(terms[0], AddedTerm):
+    if len(terms) == 1 and isinstance(terms[0], ast.AddedTerm):
         return terms[0].expr
     else:
-        return AddSubExprAST(terms)
+        return ast.AddSubExprAST(terms)
 
 def parseExpression_MulDivLevel(tokens):
     terms = []
 
     factor = parseExpression_FactorLevel(tokens)
-    terms.append(MultipliedTerm(factor))
+    terms.append(ast.MultipliedTerm(factor))
 
     while nextIsOneOfLetters(tokens, "*", "/"):
         if nextIsLetter(tokens, "*"):
             acceptLetter(tokens, "*")
             factor = parseExpression_FactorLevel(tokens)
-            terms.append(MultipliedTerm(factor))
+            terms.append(ast.MultipliedTerm(factor))
         elif nextIsLetter(tokens, "/"):
             acceptLetter(tokens, "/")
             factor = parseExpression_FactorLevel(tokens)
-            terms.append(DividedTerm(factor))
+            terms.append(ast.DividedTerm(factor))
     
-    if len(terms) == 1 and isinstance(terms[0], MultipliedTerm):
+    if len(terms) == 1 and isinstance(terms[0], ast.MultipliedTerm):
         return terms[0].expr
     else:
-        return MulDivExprAST(terms)
+        return ast.MulDivExprAST(terms)
 
 def parseExpression_FactorLevel(tokens):
     if nextIsIdentifier(tokens):
         name = acceptIdentifier(tokens)
-        return VariableAST(name)
+        return ast.VariableAST(name)
     elif nextIsInteger(tokens):
         value = acceptInteger(tokens)
-        return ConstIntAST(value)
+        return ast.ConstIntAST(value)
     elif nextIsLetter(tokens, "("):
         acceptLetter(tokens, "(")
         expression = parseExpression(tokens)
@@ -246,7 +247,7 @@ def parseFunctionCall(tokens):
     acceptLetter(tokens, "@")
     name = acceptIdentifier(tokens)
     arguments = parseCallArguments(tokens)
-    return FunctionCallAST(name, arguments)
+    return ast.FunctionCallAST(name, arguments)
 
 def parseCallArguments(tokens):
     acceptLetter(tokens, "(")
@@ -318,173 +319,3 @@ def acceptInteger(tokens):
         return tokens.takeNext().value
     else:
         raise Exception("expected integer")
-
-
-class ProgramAST:
-    def __init__(self, functions):
-        self.functions = functions
-
-class FunctionAST:
-    def __init__(self, name, retType, arguments, statement):
-        self.name = name
-        self.retType = retType
-        self.arguments = arguments
-        self.statement = statement
-
-    def __repr__(self):
-        return f"<{self.retType} {self.name}({self.arguments})>"
-
-class TypeAST:
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return self.name
-
-class ArgumentAST:
-    def __init__(self, name, dataType):
-        self.name = name
-        self.dataType = dataType
-
-    def __repr__(self):
-        return f"{self.dataType} {self.name}"
-
-class StmtAST:
-    pass
-
-class BlockStmtAST(StmtAST):
-    def __init__(self, statements):
-        self.statements = statements
-
-    def __repr__(self):
-        return "\n".join(map(str, self.statements))
-
-class ReturnStmtAST(StmtAST):
-    def __init__(self, expression):
-        self.expression = expression
-
-    def __repr__(self):
-        return f"return {self.expression}"
-
-class LetStmtAST(StmtAST):
-    def __init__(self, name, dataType, expression):
-        self.name = name
-        self.dataType = dataType
-        self.expression = expression
-
-    def __repr__(self):
-        return f"let {self.dataType} {self.name} = {self.expression}"
-
-class WhileStmtAST(StmtAST):
-    def __init__(self, condition, statement):
-        self.condition = condition
-        self.statement = statement
-
-    def __repr__(self):
-        return f"while ({self.condition}) ..."
-
-class IfStmtAST(StmtAST):
-    def __init__(self, condition, thenStatement):
-        self.condition = condition
-        self.thenStatement = thenStatement
-
-    def __repr__(self):
-        return f"if ({self.condition}) ..."
-
-class IfElseStmtAST(StmtAST):
-    def __init__(self, condition, thenStatement, elseStatement):
-        self.condition = condition
-        self.thenStatement = thenStatement
-        self.elseStatement = elseStatement
-
-    def __repr__(self):
-        return f"if ({self.condition}) ...\nelse ..."
-
-class AssignmentStmtAST:
-    def __init__(self, target, expression):
-        self.target = target
-        self.expression = expression
-
-    def __repr__(self):
-        return f"{self.target} = {self.expression}"
-
-class ArrayAssignmentStmtAST:
-    def __init__(self, target, offset, expression):
-        self.target = target
-        self.offset = offset
-        self.expression = expression
-
-    def __repr__(self):
-        return f"{self.target}[{self.offset}] = {self.expression}"
-
-class ExpressionAST:
-    pass
-
-class ComparisonExprAST(ExpressionAST):
-    def __init__(self, operator, left, right):
-        self.operator = operator
-        self.left = left 
-        self.right = right
-
-    def __repr__(self):
-        return f"{self.left}{self.operator}{self.right}"
-
-class AddSubExprAST(ExpressionAST):
-    def __init__(self, termsWithType):
-        self.terms = termsWithType
-
-    def __repr__(self):
-        string = ""
-        for term in self.terms:
-            string += term.operation + str(term.expr)
-        return string
-
-class MulDivExprAST(ExpressionAST):
-    def __init__(self, termsWithType):
-        self.terms = termsWithType
-
-    def __repr__(self):
-        string = ""
-        for term in self.terms:
-            string += term.operation + str(term.expr)
-        return string
-
-class VariableAST(ExpressionAST):
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return self.name
-
-class ConstIntAST(ExpressionAST):
-    def __init__(self, value):
-        self.value = value
-
-    def __repr__(self):
-        return str(self.value)
-
-class FunctionCallAST(ExpressionAST):
-    def __init__(self, functionName, arguments):
-        self.functionName = functionName
-        self.arguments = arguments
-
-    def __repr__(self):
-        return f"@{self.functionName}({', '.join(self.arguments)})"
-
-
-class AddedTerm:
-    operation = "+"
-    def __init__(self, expression):
-        self.expr = expression
-class SubtractedTerm:
-    operation = "-"
-    def __init__(self, expression):
-        self.expr = expression
-class MultipliedTerm:
-    operation = "*"
-    def __init__(self, expression):
-        self.expr = expression
-class DividedTerm:
-    operation = "/"
-    def __init__(self, expression):
-        self.expr = expression
