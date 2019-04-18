@@ -19,7 +19,7 @@ code = '''
         while (exponent > 0) {
             result = @mul(base, result);
             exponent = exponent - 1;
-        }    
+        }
         return result;
     }
 
@@ -27,7 +27,7 @@ code = '''
         let int result = 0;
         while (x > 0) {
             result = result + y;
-            x = x - 1;    
+            x = x - 1;
         }
         return result;
     }
@@ -47,5 +47,5 @@ hexCode = block.toMachineCode().toHex()
 f = createFunctionFromHex(CFUNCTYPE(c_longlong, c_longlong), hexCode)
 
 print()
-print(f(40))
+print(f(20))
 

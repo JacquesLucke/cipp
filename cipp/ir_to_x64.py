@@ -2,6 +2,7 @@ from . import ir
 from . x64assembler.block import Block, Label
 from . x64assembler import instructions as x64
 from . x64assembler.registers import allRegisters
+from . platform_utils import onLinux, onWindows
 
 globals().update(allRegisters)
 
@@ -14,6 +15,15 @@ def compileModule(moduleIR):
     block = Block(elements)
     return block
 
+
+# https://en.wikipedia.org/wiki/X86_calling_conventions#x86-64_calling_conventions
+if onLinux:
+    call_registers = [rdi, rsi, rdx, rcx, r8, r9]
+elif onWindows:
+    call_registers = [rcx, rdx, r8, r9]
+else:
+    raise Exception("unsupported platform")
+
 def compileFunction(functionIR):
     vregOffsets = {}
     for i, reg in enumerate(functionIR.getUsedVRegisters()):
@@ -21,8 +31,7 @@ def compileFunction(functionIR):
 
     yield from prepareStack(vregOffsets)
 
-    #for reg, vreg in zip([rdi, rsi, rdx, rcx, r8, r9], functionIR.arguments): # linux
-    for reg, vreg in zip([rcx, rdx, r8, r9], functionIR.arguments): # windows
+    for reg, vreg in zip(call_registers, functionIR.arguments):
         yield storeVirtualRegister(reg, vreg, vregOffsets)
 
     for irElement in functionIR.block:
@@ -74,7 +83,7 @@ def irInstructionToAssembly(instr, vregOffsets):
         yield x64.CompareInstr(rax, rcx)
         yield x64.JmpZeroInstr(instr.label.name)
     elif isinstance(instr, ir.CallInstr):
-        for vreg, reg in zip(instr.arguments, [rcx, rdx, r8, r9]):
+        for vreg, reg in zip(instr.arguments, call_registers):
             yield loadVirtualRegister(reg, vreg, vregOffsets)
         yield x64.CallInstr(instr.label)
         yield storeVirtualRegister(rax, instr.target, vregOffsets)
