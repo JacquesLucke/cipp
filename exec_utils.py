@@ -2,7 +2,7 @@ import sys
 import array
 from ctypes import (
     cdll, memmove, pointer, POINTER,
-    c_int, c_long, c_size_t, c_void_p, c_uint32
+    c_int, c_long, c_size_t, c_void_p, c_uint32,
 )
 
 onLinux = sys.platform.startswith("linux")
@@ -33,20 +33,17 @@ if onLinux:
     posix_memalign.argtypes = [POINTER(c_void_p), c_size_t, c_size_t]
     posix_memalign.restype = c_int
 
+    mmap = libc.mmap
+    mmap.argtypes = [c_void_p, c_size_t, c_int, c_int, c_int, c_long]
+    mmap.restype = c_void_p
+
     def allocateExecutableMemory(size):
         PROT_READ = 1
         PROT_WRITE = 2
         PROT_EXEC = 4
-        buffer = allocatePageAlignedMemory(size)
-        mprotect(buffer, size, PROT_READ | PROT_WRITE | PROT_EXEC)
-        return buffer
-
-    def allocatePageAlignedMemory(size):
-        import resource
-        pagesize = resource.getpagesize()
-        buffer = c_void_p()
-        posix_memalign(pointer(buffer), pagesize, size)
-        return buffer.value
+        MAP_PRIVATE = 2
+        MAP_ANONYMOUS = 32
+        return mmap(0, 4096, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0)
 
 elif onWindows:
 
