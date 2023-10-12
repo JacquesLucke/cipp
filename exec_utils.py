@@ -25,14 +25,6 @@ if onLinux:
 
     libc = cdll.LoadLibrary("libc.so.6")
 
-    mprotect = libc.mprotect
-    mprotect.argtypes = [c_void_p, c_size_t, c_int]
-    mprotect.restype = c_int
-
-    posix_memalign = libc.posix_memalign
-    posix_memalign.argtypes = [POINTER(c_void_p), c_size_t, c_size_t]
-    posix_memalign.restype = c_int
-
     mmap = libc.mmap
     mmap.argtypes = [c_void_p, c_size_t, c_int, c_int, c_int, c_long]
     mmap.restype = c_void_p
