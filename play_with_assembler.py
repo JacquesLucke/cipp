@@ -2,16 +2,28 @@ import sys
 from array import array
 from exec_utils import createFunctionFromHex
 
-from x64assembler.block import Block
-from x64assembler.registers import allRegisters
-from x64assembler.instructions import (
-    AddImmToRegInstr, MovRegToRegInstr, RetInstr, 
-    PushRegInstr, PopRegInstr, SyscallInstr, 
-    MovImmToRegInstr, PushImmInstr, AddRegToRegInstr, 
+from cipp.x64assembler.block import Block
+from cipp.x64assembler.registers import allRegisters
+from cipp.x64assembler.instructions import (
+    AddImmToRegInstr, MovRegToRegInstr, RetInstr,
+    PushRegInstr, PopRegInstr, SyscallInstr,
+    MovImmToRegInstr, PushImmInstr, AddRegToRegInstr,
     JmpInstr, JmpNotZeroInstr, CompareInstr
 )
 
 globals().update(allRegisters)
+
+'''
+calling conventions:
+    linux:
+        return: rax
+        arguments: rdi, rsi, rdx, rcx, r8, r9
+        don't change: rbx, rbp, r12, r13, r14, r15
+    windows:
+        return: rax
+        arguments: rcx, rdx, r8, r9
+        don't change: rbx, rbp, rdi, rsi, rsp, r12, r13, r14, r15
+'''
 
 '''
 Yes
@@ -35,17 +47,7 @@ instructions1 = [
     RetInstr()
 ]
 
-'''
-calling conventions:
-    linux:
-        return: rax
-        arguments: rdi, rsi, rdx, rcx, r8, r9
-        don't change: rbx, rbp, r12, r13, r14, r15
-    windows:
-        return: rax
-        arguments: rcx, rdx, r8, r9
-        don't change: rbx, rbp, rdi, rsi, rsp, r12, r13, r14, r15
-'''
+
 
 instructions2 = [
     MovImmToRegInstr(rax, 0),
@@ -66,7 +68,7 @@ instructions4 = [
     RetInstr()
 ]
 
-block = Block(instructions2)
+block = Block(instructions1)
 print(block.toIntelSyntax())
 print(block.toMachineCode())
 print(block.toMachineCode().toCArrayInitializer())
